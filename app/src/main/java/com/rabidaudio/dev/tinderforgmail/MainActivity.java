@@ -53,15 +53,25 @@ public class MainActivity extends Activity {
         @Override
         protected Void doInBackground(Integer... params){
 
-            Mailbox m = new Mailbox("INBOX");
+            Mailbox m = new Mailbox("[Gmail]/All Mail");//"INBOX");
 
             try {
                 m.connect();
                 List<Email> results = m.getUnreadMail(10);
                 for(Email e : results){
 //                    Log.d(TAG, e.getSubject());
-                    if(!e.isRead()){
-                        e.star();
+                    if(e.isRead()){
+                        Log.d(TAG, e.getSubject());
+//                        m.markImportantEmail(e);
+//                        m.starEmail(e);
+//                        m.deleteEmail(e);
+//                        m.markReadEmail(e);
+//                        m.unstarEmail(e);
+//                        m.markSpam(e);
+//                        m.markUnreadEmail(e);
+
+
+
 //                        Log.d(TAG, e.getSubject());
 //                        e.delete();
                     }

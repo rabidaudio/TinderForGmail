@@ -1,7 +1,12 @@
 package com.rabidaudio.dev.tinderforgmail;
 
+import com.sun.mail.gimap.GmailFolder;
+import com.sun.mail.gimap.GmailMessage;
+import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPMessage;
+import com.sun.mail.imap.IMAPStore;
+import com.sun.mail.imap.protocol.IMAPProtocol;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +25,7 @@ import javax.mail.MessagingException;
  */
 public class Email {
 
-    private IMAPMessage message;
+    private GmailMessage message;
 
     public boolean isRead() {
         try {
@@ -31,7 +36,7 @@ public class Email {
         }
     }
 
-    public Email(IMAPMessage message){
+    public Email(GmailMessage message){
         this.message = message;
     }
 
@@ -43,8 +48,8 @@ public class Email {
         message.setFlag(Flags.Flag.SEEN, false);
     }
 
-    public void star() throws MessagingException {
-        message.setFlag(Flags.Flag.FLAGGED, true);
+    public void unstar() throws MessagingException {
+        message.setFlag(Flags.Flag.FLAGGED, false);
     }
 
     //These must be done by moving folders in gmail
@@ -58,35 +63,79 @@ public class Email {
         return message.getSubject();
     }
 
-    public BufferedReader getBody() throws MessagingException {
-        //TODO maybe convert HTML to raw text //message.getContentType();
-        try {
-            return new BufferedReader(new InputStreamReader(message.getDataHandler().getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+//    public BufferedReader getBody() throws MessagingException {
+//        //TODO maybe convert HTML to raw text //message.getContentType();
+//        try {
+//            return new BufferedReader(new InputStreamReader(message.getDataHandler().getInputStream()));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
+
+    public long getID() throws MessagingException{
+//        return message.getMessageID();
+        return message.getMsgId(); //google's id
+    }
+
+    public String debugInfo() throws MessagingException{
+        String labels = "";
+        for(String l : getLabels()){
+            labels+="\t"+l+"\n";
         }
-    }
-
-    public String getID() throws MessagingException{
-        return message.getMessageID();
-    }
-
-    public String debugInfo(){
         try {
             return "Message: " + message.getSubject() + "\n" + message.getSender() + "\n"
-                    + "read? "+isRead() + "\n";
+                    + "star? "+isStarred()+"\n"
+                    + "read? "+isRead() + "\n"
+                    + "LABELS"+labels;
         }catch (Exception e){
             return "error:"+e.getMessage();
         }
     }
 
-    public void moveMessage(IMAPFolder src, IMAPFolder dest) throws MessagingException {
-        copyMessage(dest);
+    public String[] getLabels() throws MessagingException{
+        return message.getLabels();
+    }
 
+    public boolean hasLabel(String label) throws MessagingException{
+        for(String l : getLabels()){
+            if(label.equals(label)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isStarred() throws MessagingException{
+        return hasLabel("[Gmail]/Starred");
+    }
+
+
+    public void moveMessage(GmailFolder src, GmailFolder dest) throws MessagingException {
+        copyMessage(dest);
+        removeMessage(src);
+    }
+
+    public void removeMessage(GmailFolder src) throws MessagingException {
+        src.setFlags(_messageArray(), new Flags(Flags.Flag.DELETED), true);
+        src.expunge();
+    }
+
+    private void setLabel(IMAPFolder src) throws MessagingException{
+        src.doCommand(new IMAPFolder.ProtocolCommand() {
+            @Override
+            public Object doCommand(IMAPProtocol protocol) throws ProtocolException {
+//                p.comm
+                return null;
+            }
+        });
+    }
+
+    //dumbass methods want an array
+    private Message[] _messageArray(){
+        return new Message[]{ message };
     }
 
     public void copyMessage(IMAPFolder dest) throws MessagingException{
-        dest.appendMessages(new Message[]{ message });
+        dest.appendMessages(_messageArray());
     }
 }

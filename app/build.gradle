@@ -27,6 +27,6 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     //compile 'com.google.apis:google-api-services-gmail:v1-rev11-1.19.0'
-    compile 'javax.mail:mail:1.5.0-b01'
+//    compile 'javax.mail:mail:1.5.0-b01'
     compile 'com.sun.mail:gimap:1.5.2'
 }

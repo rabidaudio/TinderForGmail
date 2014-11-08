@@ -1,7 +1,11 @@
 package com.rabidaudio.dev.tinderforgmail;
 
+import android.media.MediaActionSound;
 import android.util.Log;
 
+import com.sun.mail.gimap.GmailFolder;
+import com.sun.mail.gimap.GmailMessage;
+import com.sun.mail.gimap.GmailSSLStore;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPMessage;
 import com.sun.mail.imap.IMAPSSLStore;
@@ -25,27 +29,29 @@ import javax.mail.search.SearchTerm;
  *
  */
 public class Mailbox {
-    String host      = "imap.gmail.com";
-    String username  = "rabidaudio@gmail.com";//todo arg object
-    String password  = "JcYe0v94AQ3J";
-    String provider  = "imaps";
-    int    PORT      = 993;
-    
+    public static final String TAG = Mailbox.class.getCanonicalName();
+
+    private String host      = "imap.gmail.com";
+    private String username  = "rabidaudio@gmail.com";//todo arg object
+    private String password  = "JcYe0v94AQ3J";
+    private String provider  = "gimaps";//"imaps";
+    private int    PORT      = 993;
+
 
     // create the properties for the Session
-    Properties props = new Properties();
+    private Properties props = new Properties();
 
-    String folderName;
-    Session session;
-    IMAPStore store;
+    private String folderName;
+    private Session session;
+    private GmailSSLStore store;
 
-    IMAPFolder folder;
+    private GmailFolder folder;
 
-    IMAPFolder inbox;
-    IMAPFolder trash;
-    IMAPFolder spam;
-    IMAPFolder starred;
-    IMAPFolder important;
+    private GmailFolder inbox;
+    private GmailFolder trash;
+    private GmailFolder spam;
+    private GmailFolder starred;
+    private GmailFolder important;
 
     public Mailbox(String folderName){
         this.folderName = folderName;
@@ -70,23 +76,29 @@ public class Mailbox {
         //Connect to the server
         session = Session.getInstance(props, null);
         session.setDebug(true); //TODO remove
-        store = (IMAPSSLStore) session.getStore(provider);
+        store = (GmailSSLStore) session.getStore(provider);
 
         store.connect(host, PORT, username, password);
 
         //open the inbox folder
-        folder = (IMAPFolder) store.getFolder(folderName);
+        folder = (GmailFolder) store.getFolder(folderName);
+        folder.open(Folder.READ_WRITE);
         if(folderName.equals("INBOX")){
             inbox = folder;
         }else{
-            inbox = (IMAPFolder) store.getFolder("INBOX");
+            inbox = (GmailFolder) store.getFolder("INBOX");
+            inbox.open(Folder.READ_WRITE);
         }
-        spam = (IMAPFolder) store.getFolder("[Gmail]/Spam");
-        trash = (IMAPFolder) store.getFolder("[Gmail]/Trash");
-        important = (IMAPFolder) store.getFolder("[Gmail]/Important");
-        starred = (IMAPFolder) store.getFolder("[Gmail]/Starred");
+        spam = (GmailFolder) store.getFolder("[Gmail]/Spam");
+        trash = (GmailFolder) store.getFolder("[Gmail]/Trash");
+        important = (GmailFolder) store.getFolder("[Gmail]/Important");
+        starred = (GmailFolder) store.getFolder("[Gmail]/Starred");
 
-        folder.open(Folder.READ_ONLY); //READ_WRITE);
+        spam.open(Folder.READ_WRITE);
+        trash.open(Folder.READ_WRITE);
+        important.open(Folder.READ_WRITE);
+        starred.open(Folder.READ_WRITE);
+
     }
 
     public void disconnect() throws MessagingException {
@@ -116,10 +128,10 @@ public class Mailbox {
 //        FetchProfile fp = new FetchProfile();
 //        fp.add(FetchProfile.Item.FLAGS);
 //        fp.add(FetchProfile.Item.ENVELOPE);
-        Log.d("z", "fetching");
+        Log.d(TAG, "fetching");
 //        folder.fetch(messages, fp);
 
-        Log.d("z", "searching");
+        Log.d(TAG, "searching");
 //        Message[] unreadMessages = folder.search(new SearchTerm() {
 //            @Override
 //            public boolean match(Message msg) {
@@ -132,20 +144,60 @@ public class Mailbox {
 //                }
 //            }
 //        }, messages);
+        //todo search for unread
 
-
-        Log.d("z", "building list");
+        Log.d(TAG, "building list");
 
         for (Message message : messages) {
-            Email e = new Email((IMAPMessage) message);
-            Log.d("z", e.debugInfo());
+            Email e = new Email((GmailMessage) message);
+//            Log.d(TAG, e.debugInfo());
             emails.add(e);
         }
 
         return emails;
     }
 
-    public void starEmail(){
-
+    //since these actions are based on folders, these need to be here and not as methods on email
+    //  which would be much preferable. I made move and copy methods to help this a little.
+    public void starEmail(Email msg) throws MessagingException{
+        msg.copyMessage(starred);
     }
+
+    public void unstarEmail(Email msg) throws MessagingException{
+//        msg.moveMessage(starred, folder);
+        msg.unstar();
+    }
+
+    public void markImportantEmail(Email msg) throws MessagingException{
+        msg.copyMessage(important);
+    }
+
+    public void deleteEmail(Email msg) throws MessagingException{
+        msg.moveMessage(folder, trash);
+    }
+    //TODO some bug - reimplement
+//    public void archiveEmail(Email msg) throws MessagingException {
+//        msg.removeMessage(inbox);
+//    }
+//
+//    public void markUnimportantEmail(Email msg) throws MessagingException {
+//        boolean unread = !msg.isRead();
+////        msg.moveMessage(important, folder);
+//        msg.removeMessage(important);
+//        //for some reason, moving marks as \Seen so hack fix
+//        if(unread) msg.markAsUnread();
+//    }
+
+    public void markReadEmail(Email msg) throws MessagingException {
+        msg.markAsRead();
+    }
+    public void markUnreadEmail(Email msg) throws MessagingException {
+        msg.markAsUnread();
+    }
+
+    public void markSpam(Email msg) throws MessagingException {
+        msg.moveMessage(folder, spam);
+    }
+
+    //todo add labels (find folder by name and append)
 }
