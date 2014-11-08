@@ -20,7 +20,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new GetMail().execute((Integer) null);
+//        new GetMail().execute((Integer) null);
 
 
     }
