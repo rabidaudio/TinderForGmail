@@ -1,6 +1,10 @@
 package com.rabidaudio.dev.tinderforgmail;
 
+import android.app.Service;
+import android.content.Intent;
 import android.media.MediaActionSound;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 
 import com.sun.mail.gimap.GmailFolder;
@@ -28,8 +32,33 @@ import javax.mail.search.SearchTerm;
 /**
  *
  */
-public class Mailbox {
+public class Mailbox extends Service {
     public static final String TAG = Mailbox.class.getCanonicalName();
+
+    private final IBinder mBinder = new LocalBinder();
+
+    public class LocalBinder extends Binder {
+        public Mailbox getService() {
+            // Return this instance of Service so clients can call public methods
+            return Mailbox.this;
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        username = intent.getStringExtra(MainActivity.PREFS_EMAIL);
+        password = intent.getStringExtra(MainActivity.PREFS_PASS);
+        if(intent.hasExtra(MainActivity.PREFS_FOLDER)){
+            folderName = intent.getStringExtra(MainActivity.PREFS_FOLDER);
+        }
+        return START_STICKY;
+    }
+
 
     public static final String GMAIL_INBOX = "INBOX";
     public static final String GMAIL_SPAM = "[Gmail]/Spam";
@@ -38,11 +67,11 @@ public class Mailbox {
     public static final String GMAIL_STARRED = "[Gmail]/Starred";
     public static final String GMAIL_ALLMAIL = "[Gmail]/All Mail";
 
-    private String host      = "imap.gmail.com";
-    private String username  = "rabidaudio@gmail.com";//todo arg object
-    private String password  = "JcYe0v94AQ3J";
-    private String provider  = "gimaps";//"imaps";
-    private int    PORT      = 993;
+    private final String HOST = "imap.gmail.com";
+    private String username;    //  = "rabidaudio@gmail.com";//todo arg object
+    private String password;    //  = "JcYe0v94AQ3J";
+    private static final String PROVIDER = "gimaps";//"imaps";
+    private static final int PORT = 993;
 
 
 //    public static interface MailboxCallback {
@@ -66,33 +95,41 @@ public class Mailbox {
     private GmailFolder starred;
     private GmailFolder important;
 
-    public Mailbox(String folderName){//, MailboxCallback callback){
-        this.folderName = folderName;
-//        this.callback = callback;
+//    public Mailbox(){//, MailboxCallback callback){
+////        this.folderName = folderName;
+////        this.callback = callback;
+//
+//        // configure the jvm to use the jsse security.
+////        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+////        props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//        // don't fallback to normal IMAP connections on failure.
+////        props.setProperty("mail.imap.socketFactory.fallback", String.valueOf(false));
+//        // use the simap port for imap/ssl connections.
+////        props.setProperty("mail.imap.socketFactory.port", String.valueOf(PORT));
+//        // set this session up to use SSL for IMAP connections
+//        // note that you can also use the defult imap port (including the
+//        // port specified by mail.imap.port) for your SSL port configuration.
+//        // however, specifying mail.imap.socketFactory.port means that,
+//        // if you decide to use fallback, you can try your SSL connection
+//        // on the SSL port, and if it fails, you can fallback to the normal
+//        // IMAP port.
+//    }
 
-        // configure the jvm to use the jsse security.
-//        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-//        props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        // don't fallback to normal IMAP connections on failure.
-//        props.setProperty("mail.imap.socketFactory.fallback", String.valueOf(false));
-        // use the simap port for imap/ssl connections.
-//        props.setProperty("mail.imap.socketFactory.port", String.valueOf(PORT));
-        // set this session up to use SSL for IMAP connections
-        // note that you can also use the defult imap port (including the
-        // port specified by mail.imap.port) for your SSL port configuration.
-        // however, specifying mail.imap.socketFactory.port means that,
-        // if you decide to use fallback, you can try your SSL connection
-        // on the SSL port, and if it fails, you can fallback to the normal
-        // IMAP port.
-    }
-
-    public void connect() throws MessagingException {
+    public void connect(Runnable callback) throws MessagingException {
+        if(username==null || password==null){
+            Utils.Toaster(this, "U/P never provided!!!");
+            return;
+        }
+        if(folderName == null){
+            Log.d(TAG, "folder choice not set");
+            folderName = GMAIL_ALLMAIL;
+        }
         //Connect to the server
         session = Session.getInstance(props, null);
         session.setDebug(true); //TODO remove
-        store = (GmailSSLStore) session.getStore(provider);
+        store = (GmailSSLStore) session.getStore(PROVIDER);
 
-        store.connect(host, PORT, username, password);
+        store.connect(HOST, PORT, username, password);
 
         //open the inbox folder
         folder = (GmailFolder) store.getFolder(folderName);
@@ -113,6 +150,7 @@ public class Mailbox {
         important.open(Folder.READ_WRITE);
         starred.open(Folder.READ_WRITE);
 
+        if(callback!=null) callback.run();
     }
 
     public void disconnect() throws MessagingException {

@@ -22,6 +22,9 @@
             android:label="SigninActivity">
 
             </activity>
+        <service android:name=".Mailbox">
+
+        </service>
     </application>
 
 </manifest>

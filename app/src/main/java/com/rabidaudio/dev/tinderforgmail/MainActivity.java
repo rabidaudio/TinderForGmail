@@ -24,6 +24,9 @@ public class MainActivity extends Activity implements ServiceConnection {
 
     public static final String PREFS_EMAIL = MainActivity.class.getPackage().getName()+".PREFS_EMAIL";
     public static final String PREFS_PASS = MainActivity.class.getPackage().getName()+".PREFS_PASS";
+    public static final String PREFS_FOLDER = MainActivity.class.getPackage().getName()+".PREFS_FOLDER";
+
+    private Mailbox mService = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +40,6 @@ public class MainActivity extends Activity implements ServiceConnection {
         if(!settings.contains(PREFS_EMAIL)){
             startActivityForResult(new Intent(this, SigninActivity.class), 1);
         }
-
-        String u = settings.getString(PREFS_EMAIL, null);
-        String p = settings.getString(PREFS_PASS, null);
-        Utils.Toaster(this, u+"+"+p);
 
 //        new GetMail().execute((Integer) null);
 
@@ -65,19 +64,53 @@ public class MainActivity extends Activity implements ServiceConnection {
     @Override
     public void onStart(){
         super.onStart();
-        bindService(new Intent(this, MailService.class), this, Context.BIND_AUTO_CREATE);
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        final String u = settings.getString(PREFS_EMAIL, null);
+        final String p = settings.getString(PREFS_PASS, null);
+        Utils.Toaster(this, u+"+"+p);
+        //launch MailService
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "binding....");
+                Intent i = new Intent(MainActivity.this, Mailbox.class);
+                i.putExtra(PREFS_EMAIL, u);
+                i.putExtra(PREFS_PASS, p);
+                i.putExtra(PREFS_FOLDER, Mailbox.GMAIL_ALLMAIL);
+                bindService(i, MainActivity.this, Context.BIND_AUTO_CREATE);
+            }
+        }).start();
+
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        unbindService(this);
     }
 
     // Service Connector methods
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "service bound!");
+        //reference to service running on another thread
+        mService = ((Mailbox.LocalBinder) service).getService();
+        if(mService==null) Log.e(TAG, "no mailbox!");
+        try {
+            Log.d(TAG, "trying to connect");
 
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            Log.e(TAG, "connection issue", e);
+        }
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-
+        Log.d(TAG, "Mailbox service disconnected");
+        mService = null;
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -98,6 +131,22 @@ public class MainActivity extends Activity implements ServiceConnection {
         return super.onOptionsItemSelected(item);
     }
 
+    private void startMain(){
+        //now connections are ready and we can start drawing
+        //TODO make cards, etc
+        try {
+            List<Email> results = mService.getUnreadMail(10);
+            for (Email e : results) {
+                if (e.isRead()) {
+                    Log.d(TAG, e.getSubject());
+                    e.markAsUnread();
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            Log.e(TAG, "open issue", e);
+        }
+    }
 //    class GetMail extends AsyncTask<Integer, Void, Void>{
 //        @Override
 //        protected Void doInBackground(Integer... params){
