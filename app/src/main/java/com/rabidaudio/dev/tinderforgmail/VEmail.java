@@ -62,6 +62,26 @@ public class VEmail implements Serializable {
 //        }
 //    }
 
+    public String getBody(){
+        return " \t\n" +
+                "CharlesJulianKnight,\n" +
+                "Your Tweet got favorited!\t \tCharlesJulianKnight\t\n" +
+                " \t \t\t \t\n" +
+                " CharlesJulianKnight\t\tCharlesJulianKnight\n" +
+                "@charlesjuliank\n" +
+                "The 6 pitches I've heard over and over: 1. EHR 2. Social Fitness 3. Social Events 4. Social Fashion 5. Career Placement 6. Course Management\n" +
+                "09:19 PM - 07 Nov 14\n" +
+                "\t\tFavorited by\n" +
+                " Wanda-Your Friend\t\tWanda-Your Friend @WandaExplores\t\n" +
+                "music evangelist || creator: stageHuddle · Music:Tech Atl · Music Hack Atl\n" +
+                "See what else @WandaExplores is favoriting.\t\n" +
+                "View their profile\t\n" +
+                "Forgot your Twitter password? Get instructions on how to reset it.\n" +
+                "You can also unsubscribe from these emails or change your notification settings. Need help?\n" +
+                "If you received this message in error and did not sign up for Twitter, click not my account.\n" +
+                "Twitter, Inc. 1355 Market St., Suite 900 San Francisco, CA 94103\n";
+    }
+
         public long getGMID() throws MessagingException{
             return 100;
         }

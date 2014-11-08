@@ -49,9 +49,8 @@ public class MainActivity extends Activity {
             startActivityForResult(new Intent(this, SigninActivity.class), 1);
         }
 
-//        Card card = new Card(this);
-//        card.setEmail(new VEmail(null));
-//        ((RelativeLayout)findViewById(R.id.main_container)).addView(card);
+        Card c = (Card) findViewById(R.id.c);
+        c.setEmail(new VEmail(null));
 
 
 //        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {

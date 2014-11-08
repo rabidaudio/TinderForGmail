@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
@@ -8,32 +8,31 @@
     <RelativeLayout
         android:id="@+id/header_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
+        android:layout_height="match_parent">
+        <com.rabidaudio.dev.tinderforgmail.FontFitTextView
             android:id="@+id/sender"
-            android:text="awertwetr"
             android:textStyle="italic"
             android:padding="10dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="34sp"/>
-        <TextView
+            android:layout_height="wrap_content" />
+        <com.rabidaudio.dev.tinderforgmail.FontFitTextView
             android:id="@+id/subject"
-            android:text="werewrwfsdfsdf"
             android:padding="7dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="50sp"
             android:layout_below="@+id/sender"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/body"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="12sp"
+            android:padding="30dp"
+            android:layout_below="@+id/subject"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/body"
-        android:text="asdfasdf"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="40sp"/>
-
-</LinearLayout>
+</RelativeLayout>

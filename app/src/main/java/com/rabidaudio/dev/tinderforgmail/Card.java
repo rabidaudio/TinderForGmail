@@ -5,11 +5,14 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import javax.mail.MessagingException;
 
 
 public class Card extends LinearLayout {
@@ -56,14 +59,21 @@ public class Card extends LinearLayout {
         subject = (TextView) findViewById(R.id.subject);
         body = (TextView) findViewById(R.id.body);
 
-        findViewById(R.id.header_container).setMinimumHeight(Math.round(0.4f*getMeasuredHeight()));
-
-        setBody("Hello World");
+        findViewById(R.id.header_container).setMinimumHeight(Math.round(0.45f*getMeasuredHeight()));
+//        ((TextView) findViewById(R.id.body)).setMaxHeight(Math.round(0.6f*getMeasuredHeight()));
 
     }
 
-    public void setEmail(VEmail e){
-        this.email = e;
+    public void setEmail(VEmail email){
+        this.email = email;
+        try {
+            setBody(email.getBody());
+            setSender("From: " + email.getSenderName() + "<" + email.getSenderEmail() + ">");
+            setSubject(email.getSubject());
+            invalidate();
+        }catch (MessagingException ex){
+            Log.e(TAG, "Couldn't populate card", ex);
+        }
     }
 
     @Override
@@ -103,15 +113,18 @@ public class Card extends LinearLayout {
 
     private void setBody(String content){
         body.setText(content);
-        invalidate();
+    }
+    private void setSender(String content){
+        sender.setText(content);
+    }
+    private void setSubject(String content){
+        subject.setText(content);
     }
 
     @Override
     protected void onDraw(Canvas c){
         int side = Math.min(getMeasuredWidth(), getMeasuredHeight());
         c.drawRect(SHADOW_RADIUS, SHADOW_RADIUS, side-SHADOW_RADIUS, 0.4f*(side-SHADOW_RADIUS), headerBox);
-//        c.drawText(email.getSenderEmail(), 100, 100, senderTextPaint);
-
         super.onDraw(c);
     }
 }
