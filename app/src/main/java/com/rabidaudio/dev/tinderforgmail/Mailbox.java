@@ -31,6 +31,13 @@ import javax.mail.search.SearchTerm;
 public class Mailbox {
     public static final String TAG = Mailbox.class.getCanonicalName();
 
+    public static final String GMAIL_INBOX = "INBOX";
+    public static final String GMAIL_SPAM = "[Gmail]/Spam";
+    public static final String GMAIL_TRASH = "[Gmail]/Trash";
+    public static final String GMAIL_IMPORTANT = "[Gmail]/Important";
+    public static final String GMAIL_STARRED = "[Gmail]/Starred";
+    public static final String GMAIL_ALLMAIL = "[Gmail]/All Mail";
+
     private String host      = "imap.gmail.com";
     private String username  = "rabidaudio@gmail.com";//todo arg object
     private String password  = "JcYe0v94AQ3J";
@@ -38,8 +45,14 @@ public class Mailbox {
     private int    PORT      = 993;
 
 
+//    public static interface MailboxCallback {
+//        public void onConnected(Mailbox m);
+//        public void onDisconnected();
+//    }
+
     // create the properties for the Session
     private Properties props = new Properties();
+//    private MailboxCallback callback;
 
     private String folderName;
     private Session session;
@@ -53,8 +66,9 @@ public class Mailbox {
     private GmailFolder starred;
     private GmailFolder important;
 
-    public Mailbox(String folderName){
+    public Mailbox(String folderName){//, MailboxCallback callback){
         this.folderName = folderName;
+//        this.callback = callback;
 
         // configure the jvm to use the jsse security.
 //        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
@@ -83,16 +97,16 @@ public class Mailbox {
         //open the inbox folder
         folder = (GmailFolder) store.getFolder(folderName);
         folder.open(Folder.READ_WRITE);
-        if(folderName.equals("INBOX")){
+        if(folderName.equals(GMAIL_INBOX)){
             inbox = folder;
         }else{
-            inbox = (GmailFolder) store.getFolder("INBOX");
+            inbox = (GmailFolder) store.getFolder(GMAIL_INBOX);
             inbox.open(Folder.READ_WRITE);
         }
-        spam = (GmailFolder) store.getFolder("[Gmail]/Spam");
-        trash = (GmailFolder) store.getFolder("[Gmail]/Trash");
-        important = (GmailFolder) store.getFolder("[Gmail]/Important");
-        starred = (GmailFolder) store.getFolder("[Gmail]/Starred");
+        spam = (GmailFolder) store.getFolder(GMAIL_SPAM);
+        trash = (GmailFolder) store.getFolder(GMAIL_TRASH);
+        important = (GmailFolder) store.getFolder(GMAIL_IMPORTANT);
+        starred = (GmailFolder) store.getFolder(GMAIL_STARRED);
 
         spam.open(Folder.READ_WRITE);
         trash.open(Folder.READ_WRITE);
