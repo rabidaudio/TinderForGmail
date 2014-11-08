@@ -74,9 +74,11 @@ public class Email implements Serializable {
 //        }
 //    }
 
-    public long getID() throws MessagingException{
-//        return message.getMessageID();
+    public long getGMID() throws MessagingException{
         return message.getMsgId(); //google's id
+    }
+    public String getID() throws MessagingException{
+        return message.getMessageID();
     }
 
     public String debugInfo() throws MessagingException{

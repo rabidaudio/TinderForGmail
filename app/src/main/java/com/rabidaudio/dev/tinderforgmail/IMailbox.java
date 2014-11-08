@@ -24,8 +24,8 @@ public interface IMailbox {
     public void connect()throws MessagingException;
     public void disconnect()throws MessagingException;
 
-    public List<Email> getUnreadMail()throws MessagingException;
-    public List<Email> getUnreadMail(int count)throws MessagingException;
+    public void getUnreadMail()throws MessagingException;
+    public void getUnreadMail(int count)throws MessagingException;
 
 
     public void starEmail(Email msg)throws MessagingException;
