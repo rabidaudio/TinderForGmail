@@ -1,5 +1,6 @@
 package com.rabidaudio.dev.tinderforgmail;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaActionSound;
@@ -32,31 +33,42 @@ import javax.mail.search.SearchTerm;
 /**
  *
  */
-public class Mailbox extends Service {
+public class Mailbox extends IntentService {
     public static final String TAG = Mailbox.class.getCanonicalName();
 
-    private final IBinder mBinder = new LocalBinder();
-
-    public class LocalBinder extends Binder {
-        public Mailbox getService() {
-            // Return this instance of Service so clients can call public methods
-            return Mailbox.this;
-        }
+    public Mailbox() {
+        super("MailboxService");
+        Log.d(TAG, "Mailbox service constructed");
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        username = intent.getStringExtra(MainActivity.PREFS_EMAIL);
-        password = intent.getStringExtra(MainActivity.PREFS_PASS);
-        if(intent.hasExtra(MainActivity.PREFS_FOLDER)){
-            folderName = intent.getStringExtra(MainActivity.PREFS_FOLDER);
+    protected void onHandleIntent(Intent intent) {
+        String action = intent.getAction();
+        if(username==null || password==null){
+            username = intent.getStringExtra(MainActivity.PREFS_EMAIL);
+            password = intent.getStringExtra(MainActivity.PREFS_PASS);
+            if(intent.hasExtra(MainActivity.PREFS_FOLDER)){
+                folderName = intent.getStringExtra(MainActivity.PREFS_FOLDER);
+            }
         }
-        return START_STICKY;
+        if(action.equals("CONNECT")) {
+            try {
+                connect();
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        }else if(action.equals("GET_MAIL")){
+            try{
+                List<Email> emails = getUnreadMail(10);
+                for(Email e : emails){
+                    Log.d(TAG, e.getSubject());
+                }
+            }catch (MessagingException e){
+                e.printStackTrace();
+            }
+        }else{
+            Log.d(TAG, "Unknown action "+action);
+        }
     }
 
 
@@ -115,7 +127,7 @@ public class Mailbox extends Service {
 //        // IMAP port.
 //    }
 
-    public void connect(Runnable callback) throws MessagingException {
+    public void connect() throws MessagingException {
         if(username==null || password==null){
             Utils.Toaster(this, "U/P never provided!!!");
             return;
@@ -150,7 +162,7 @@ public class Mailbox extends Service {
         important.open(Folder.READ_WRITE);
         starred.open(Folder.READ_WRITE);
 
-        if(callback!=null) callback.run();
+        Log.d(TAG, "connected!");
     }
 
     public void disconnect() throws MessagingException {

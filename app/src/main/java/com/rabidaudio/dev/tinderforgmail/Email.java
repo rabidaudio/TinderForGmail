@@ -11,6 +11,7 @@ import com.sun.mail.imap.protocol.IMAPProtocol;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -23,7 +24,7 @@ import javax.mail.MessagingException;
  *
  * https://support.google.com/mail/answer/77657?hl=en
  */
-public class Email {
+public class Email implements Serializable {
 
     private GmailMessage message;
 
