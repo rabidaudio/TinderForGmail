@@ -15,10 +15,15 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RelativeLayout;
+
+import com.sun.mail.gimap.GmailMessage;
+import com.sun.mail.imap.IMAPMessage;
 
 import java.util.List;
 import java.util.Random;
 
+import javax.mail.Message;
 import javax.mail.MessagingException;
 
 
@@ -44,18 +49,23 @@ public class MainActivity extends Activity {
             startActivityForResult(new Intent(this, SigninActivity.class), 1);
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
-             @Override
-             public void onReceive(Context context, Intent intent) {
-                 String action = intent.getAction();
-                 if(action.equals("CONNECTED")){
-                     Log.d(TAG, "received connected msg");
-                     Intent i = new Intent(MainActivity.this, Mailbox.class);
-                     i.setAction("GET_MAIL");
-                     startService(i);
-                 }
-             }
-         }, new IntentFilter());
+//        Card card = new Card(this);
+//        card.setEmail(new VEmail(null));
+//        ((RelativeLayout)findViewById(R.id.main_container)).addView(card);
+
+
+//        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+//             @Override
+//             public void onReceive(Context context, Intent intent) {
+//                 String action = intent.getAction();
+//                 if(action.equals("CONNECTED")){
+//                     Log.d(TAG, "received connected msg");
+//                     Intent i = new Intent(MainActivity.this, Mailbox.class);
+//                     i.setAction("GET_MAIL");
+//                     startService(i);
+//                 }
+//             }
+//         }, new IntentFilter());
 
 //        new GetMail().execute((Integer) null);
 
@@ -90,14 +100,9 @@ public class MainActivity extends Activity {
         i.putExtra(PREFS_PASS, p);
         i.putExtra(PREFS_FOLDER, Mailbox.GMAIL_ALLMAIL);
         i.setAction("CONNECT");
-        startService(i);
+//        startService(i);
 
     }
-
-//    @Override
-//    public void onStop(){
-//        super.onStop();
-//    }
 
 
     @Override
@@ -119,22 +124,23 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void startMain(){
-        //now connections are ready and we can start drawing
-        //TODO make cards, etc
-        try {
-            List<Email> results = mService.getUnreadMail(10);
-            for (Email e : results) {
-                if (e.isRead()) {
-                    Log.d(TAG, e.getSubject());
-                    e.markAsUnread();
-                }
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            Log.e(TAG, "open issue", e);
-        }
-    }
+//    private void startMain(){
+//        //now connections are ready and we can start drawing
+//        //TODO make cards, etc
+//        try {
+//            List<Email> results = mService.getUnreadMail(10);
+//            for (Email e : results) {
+//                if (e.isRead()) {
+//                    Log.d(TAG, e.getSubject());
+//                    e.markAsUnread();
+//                }
+//            }
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            Log.e(TAG, "open issue", e);
+//        }
+//    }
+
 //    class GetMail extends AsyncTask<Integer, Void, Void>{
 //        @Override
 //        protected Void doInBackground(Integer... params){

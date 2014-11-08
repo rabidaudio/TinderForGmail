@@ -40,9 +40,9 @@ public class MailboxConnector  {
 
 
     public static interface MailboxListener {
-        public void onConnected();
-        public void onDisconnected();
-        public void recieveEmails(List<Email> emails);
+//        public void onConnected();
+//        public void onDisconnected();
+//        public void recieveEmails(List<Email> emails);
     }
 
     /**
@@ -157,7 +157,7 @@ public class MailboxConnector  {
         @Override
         public void starEmail(Email msg) throws MessagingException {
             Bundle b = new Bundle();
-            b.putString(msg.getID());
+//            b.putString(msg.getID());
 
         }
 
