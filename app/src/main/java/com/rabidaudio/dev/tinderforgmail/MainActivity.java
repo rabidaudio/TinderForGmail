@@ -1,14 +1,17 @@
 package com.rabidaudio.dev.tinderforgmail;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +43,19 @@ public class MainActivity extends Activity {
         if(!settings.contains(PREFS_EMAIL)){
             startActivityForResult(new Intent(this, SigninActivity.class), 1);
         }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+             @Override
+             public void onReceive(Context context, Intent intent) {
+                 String action = intent.getAction();
+                 if(action.equals("CONNECTED")){
+                     Log.d(TAG, "received connected msg");
+                     Intent i = new Intent(MainActivity.this, Mailbox.class);
+                     i.setAction("GET_MAIL");
+                     startService(i);
+                 }
+             }
+         }, new IntentFilter());
 
 //        new GetMail().execute((Integer) null);
 

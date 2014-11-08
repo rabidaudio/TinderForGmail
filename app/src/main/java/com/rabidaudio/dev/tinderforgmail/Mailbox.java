@@ -54,6 +54,10 @@ public class Mailbox extends IntentService {
         if(action.equals("CONNECT")) {
             try {
                 connect();
+                Log.d(TAG, "telling activity");
+                Intent i = new Intent(this, MainActivity.class);
+                i.setAction("CONNECTED");
+                sendBroadcast(i);
             } catch (MessagingException e) {
                 e.printStackTrace();
             }
@@ -138,7 +142,7 @@ public class Mailbox extends IntentService {
         }
         //Connect to the server
         session = Session.getInstance(props, null);
-        session.setDebug(true); //TODO remove
+//        session.setDebug(true); //TODO remove
         store = (GmailSSLStore) session.getStore(PROVIDER);
 
         store.connect(HOST, PORT, username, password);
