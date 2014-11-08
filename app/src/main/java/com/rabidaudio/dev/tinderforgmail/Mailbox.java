@@ -24,22 +24,30 @@ import javax.mail.search.SearchTerm;
 /**
  *
  */
-public class IMAPGetMail {
+public class Mailbox {
     String host      = "imap.gmail.com";
     String username  = "rabidaudio@gmail.com";//todo arg object
     String password  = "JcYe0v94AQ3J";
     String provider  = "imaps";
     int    PORT      = 993;
+    
 
     // create the properties for the Session
     Properties props = new Properties();
 
     String folderName;
-    IMAPFolder folder;
     Session session;
     IMAPStore store;
 
-    public IMAPGetMail(String folderName){
+    IMAPFolder folder;
+
+    IMAPFolder inbox;
+    IMAPFolder trash;
+    IMAPFolder spam;
+    IMAPFolder starred;
+    IMAPFolder important;
+
+    public Mailbox(String folderName){
         this.folderName = folderName;
 
         // configure the jvm to use the jsse security.
@@ -68,7 +76,17 @@ public class IMAPGetMail {
 
         //open the inbox folder
         folder = (IMAPFolder) store.getFolder(folderName);
-        folder.open(Folder.READ_WRITE);
+        if(folderName.equals("INBOX")){
+            inbox = folder;
+        }else{
+            inbox = (IMAPFolder) store.getFolder("INBOX");
+        }
+        spam = (IMAPFolder) store.getFolder("[Gmail]/Spam");
+        trash = (IMAPFolder) store.getFolder("[Gmail]/Trash");
+        important = (IMAPFolder) store.getFolder("[Gmail]/Important");
+        starred = (IMAPFolder) store.getFolder("[Gmail]/Starred");
+
+        folder.open(Folder.READ_ONLY); //READ_WRITE);
     }
 
     public void disconnect() throws MessagingException {
@@ -78,26 +96,18 @@ public class IMAPGetMail {
         store.close();
     }
 
-
     public List<Email> getUnreadMail() throws MessagingException {
+        return getUnreadMail(50);
+    }
+
+
+    public List<Email> getUnreadMail(int count) throws MessagingException {
 
 
         ArrayList<Email> emails = new ArrayList<Email>();
 
-        // get a list of javamail messages as an array of messages
-//        Message[] messages = folder.search(new SearchTerm() {
-//            //TODO this downloads the entirety of the folder and searches locally, which is RETARDED
-//            @Override
-//            public boolean match(Message msg) {
-//                try {
-//                    return !msg.isSet(Flags.Flag.SEEN);
-//                } catch (MessagingException e) {
-//                    return false;
-//                }
-//            }
-//        });
         int total = folder.getMessageCount();
-        Message[] messages = folder.getMessages(total-10, total);
+        Message[] messages = folder.getMessages(total-count, total);
 
 //        FlagTerm ft = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
 //        Message messages[] = folder.search(ft);
@@ -133,5 +143,9 @@ public class IMAPGetMail {
         }
 
         return emails;
+    }
+
+    public void starEmail(){
+
     }
 }

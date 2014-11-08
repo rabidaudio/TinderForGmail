@@ -1,11 +1,13 @@
 package com.rabidaudio.dev.tinderforgmail;
 
+import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -41,21 +43,23 @@ public class Email {
         message.setFlag(Flags.Flag.SEEN, false);
     }
 
-    public void delete() throws MessagingException {
-        message.setFlag(Flags.Flag.DELETED, true);
+    public void star() throws MessagingException {
+        message.setFlag(Flags.Flag.FLAGGED, true);
     }
 
-    public void archive() throws MessagingException {
-        //TODO
-    }
+    //These must be done by moving folders in gmail
+//    public void delete() throws MessagingException {
+//    }
+//
+//    public void archive() throws MessagingException {
+//    }
 
     public String getSubject() throws MessagingException {
         return message.getSubject();
     }
 
     public BufferedReader getBody() throws MessagingException {
-        //TODO maybe convert HTML to raw text
-            //message.getContentType();
+        //TODO maybe convert HTML to raw text //message.getContentType();
         try {
             return new BufferedReader(new InputStreamReader(message.getDataHandler().getInputStream()));
         } catch (IOException e) {
@@ -64,33 +68,25 @@ public class Email {
         }
     }
 
+    public String getID() throws MessagingException{
+        return message.getMessageID();
+    }
+
     public String debugInfo(){
-//        String flags = "";
-//        int flagcount = 0;
         try {
-//            Flags fs = message.getFlags();
-//            if(fs.contains(Flags.Flag.SEEN)){
-//                flags+= "\nseen";
-//            }
-//            if(fs.contains(Flags.Flag.FLAGGED)){
-//                flags+="\nflagged";
-//            }
-
-//            for(Flags.Flag f : message.getFlags().getSystemFlags()){
-//                flagcount++;
-//                flags+= "\n"+f.toString();
-//            }
-//            for(String f : message.getFlags().getUserFlags()){
-//                flagcount++;
-//                flags+= "\n"+f;
-//            }
-
-            return "Message: " + message.getSubject() + "\n" + message.getFrom() + "\n"
+            return "Message: " + message.getSubject() + "\n" + message.getSender() + "\n"
                     + "read? "+isRead() + "\n";
-
-//                   + "FLAGS: " + flagcount + flags;
         }catch (Exception e){
             return "error:"+e.getMessage();
         }
+    }
+
+    public void moveMessage(IMAPFolder src, IMAPFolder dest) throws MessagingException {
+        copyMessage(dest);
+
+    }
+
+    public void copyMessage(IMAPFolder dest) throws MessagingException{
+        dest.appendMessages(new Message[]{ message });
     }
 }

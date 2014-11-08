@@ -53,16 +53,17 @@ public class MainActivity extends Activity {
         @Override
         protected Void doInBackground(Integer... params){
 
-            IMAPGetMail m = new IMAPGetMail("INBOX");
+            Mailbox m = new Mailbox("INBOX");
 
             try {
                 m.connect();
-                List<Email> results = m.getUnreadMail();
+                List<Email> results = m.getUnreadMail(10);
                 for(Email e : results){
 //                    Log.d(TAG, e.getSubject());
                     if(!e.isRead()){
+                        e.star();
 //                        Log.d(TAG, e.getSubject());
-                        e.delete();
+//                        e.delete();
                     }
                 }
             } catch (MessagingException e) {
