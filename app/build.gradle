@@ -31,4 +31,5 @@ dependencies {
     compile 'com.sun.mail:gimap:1.5.2'
     compile "com.android.support:support-v4:21+" //gives access to LocalBroadcastManager
     compile 'com.android.support:cardview-v7:21.+'
+//    compile 'com.ikimuhendis:ldrawer:0.1'
 }

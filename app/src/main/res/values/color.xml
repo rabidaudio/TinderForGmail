@@ -2,4 +2,6 @@
 <resources>
     <color name="lightblue">#ff66ccff</color>
     <color name="pink">#e74c3c</color>
+    <color name="blue">#18b3c3</color>
+    <color name="green">#6bcf35</color>
 </resources>

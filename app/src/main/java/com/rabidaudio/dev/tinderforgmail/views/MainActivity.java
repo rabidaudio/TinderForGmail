@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.rabidaudio.dev.tinderforgmail.Mailbox;
 import com.rabidaudio.dev.tinderforgmail.R;
@@ -118,7 +119,6 @@ public class MainActivity extends Activity {
 //         }, new IntentFilter());
 
 //        new GetMail().execute((Integer) null);
-
 
     }
 
