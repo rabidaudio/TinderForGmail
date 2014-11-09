@@ -108,14 +108,16 @@ public class MainActivity extends Activity {
                                 case Card.NORTH:
                                     Log.w(TAG, "DELETE");
                                     Utils.Toaster(MainActivity.this, "Deleted");
+                                    new Delete().execute(v.getEmail());
                                     break;
                                 case Card.EAST:
                                     Utils.Toaster(MainActivity.this, "Sent to the back");
                                     Log.w(TAG, "SKIP");
                                     break;
                                 case Card.SOUTH:
-                                    Log.w(TAG, "ARCHIVE");
-                                    Utils.Toaster(MainActivity.this, "Archived");
+                                    Log.w(TAG, "SPAM");
+                                    Utils.Toaster(MainActivity.this, "Spam");
+                                    new MarkSpam().execute(v.getEmail());
                                     break;
                             }
                             setNextEmail(); //prepare the lower one
@@ -374,6 +376,38 @@ public class MainActivity extends Activity {
 //                } catch (MessagingException e) {
 //                    Log.e(TAG, "", e);
 //                }
+            }
+            return null;
+        }
+    }
+
+    class MarkSpam extends AsyncTask<Email, Void, Void> {
+        @Override
+        protected Void doInBackground(Email... params){
+
+            try {
+//                m.connect(username, password);
+                for(Email e : params){
+                    m.markSpam(e);
+                }
+            } catch (MessagingException e) {
+                Log.e(TAG, "", e);
+            }
+            return null;
+        }
+    }
+
+    class Delete extends AsyncTask<Email, Void, Void> {
+        @Override
+        protected Void doInBackground(Email... params){
+
+            try {
+//                m.connect(username, password);
+                for(Email e : params){
+                    m.deleteEmail(e);
+                }
+            } catch (MessagingException e) {
+                Log.e(TAG, "", e);
             }
             return null;
         }
