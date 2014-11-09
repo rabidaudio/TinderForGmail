@@ -2,6 +2,7 @@ package com.rabidaudio.dev.tinderforgmail;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -13,8 +14,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.sun.mail.gimap.GmailMessage;
@@ -51,6 +57,70 @@ public class MainActivity extends Activity {
 
         Card c = (Card) findViewById(R.id.c);
         c.setEmail(new VEmail(null));
+        c.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View view, DragEvent event) {
+//                int center_x = (v.getLeft() + v.getRight()) / 2;
+//                int center_y = (v.getTop() + v.getBottom()) / 2;
+//                float touch_x = event.getX();
+//                float touch_y = event.getY();
+//                Log.v(TAG, "DRAG: "+center_x+","+center_y+";"+touch_x+","+touch_y);
+
+                Card v = (Card) view;
+
+                Log.v(TAG, "DRAG-EVENT: "+event.getAction());
+                switch (event.getAction()) {
+                    case DragEvent.ACTION_DRAG_STARTED:
+                        v.setVisibility(View.INVISIBLE);
+                        break;
+                    case DragEvent.ACTION_DRAG_ENTERED:
+                        v.drag_x = event.getX();
+                        v.drag_y = event.getY();
+                        v.drag_time = System.currentTimeMillis();
+                        break;
+                    case DragEvent.ACTION_DRAG_LOCATION:
+                        float dx = (event.getX() - v.drag_x)/v.drag_time;
+                        float dy = (event.getY() - v.drag_y)/v.drag_time;
+                        Log.d(TAG, "dx: "+dx+"  dy: "+dy);
+                        v.drag_x = event.getX();
+                        v.drag_y = event.getY();
+                        v.drag_time = System.currentTimeMillis();
+                        break;
+                    case DragEvent.ACTION_DRAG_EXITED:
+                        break;
+                    case DragEvent.ACTION_DROP:
+                        // Dropped, reassign View to ViewGroup
+                        View newView = (View) event.getLocalState();
+                        ViewGroup owner = (ViewGroup) newView.getParent();
+                        owner.removeView(newView);
+                        ((RelativeLayout) findViewById(R.id.main_container)).addView(newView);
+                        newView.setVisibility(View.VISIBLE);
+                        break;
+                    case DragEvent.ACTION_DRAG_ENDED:
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+        c.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    ClipData data = ClipData.newPlainText("label", "text"); //todo email content
+                    View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(v);
+                    v.startDrag(data, shadowBuilder, v, 0);
+//                    v.setVisibility(View.INVISIBLE);
+                    return true;
+//                }else if(event.getAction() == MotionEvent.ACTION_UP){
+////                    v.setVisibility(View.VISIBLE);
+//
+//                    return true;
+                }
+                return false;
+            }
+        });
 
 
 //        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {

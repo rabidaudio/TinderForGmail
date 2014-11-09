@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -28,6 +29,10 @@ public class Card extends LinearLayout {
     private TextView sender;
     private TextView subject;
     private TextView body;
+
+    public float drag_x = 0;
+    public float drag_y = 0;
+    public float drag_time = 0;
 
     private static final int SHADOW_RADIUS = 8*3;
 
@@ -61,6 +66,8 @@ public class Card extends LinearLayout {
 
         findViewById(R.id.header_container).setMinimumHeight(Math.round(0.45f*getMeasuredHeight()));
 //        ((TextView) findViewById(R.id.body)).setMaxHeight(Math.round(0.6f*getMeasuredHeight()));
+
+//        setOnDragListener(this); //listen to drag events
 
     }
 
