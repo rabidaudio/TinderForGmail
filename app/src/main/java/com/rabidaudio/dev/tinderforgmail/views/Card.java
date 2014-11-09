@@ -1,6 +1,5 @@
 package com.rabidaudio.dev.tinderforgmail.views;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -8,16 +7,13 @@ import android.graphics.Paint;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.rabidaudio.dev.tinderforgmail.Email;
 import com.rabidaudio.dev.tinderforgmail.R;
-import com.rabidaudio.dev.tinderforgmail.VEmail;
 
 import javax.mail.MessagingException;
 
@@ -33,7 +29,7 @@ public class Card extends CardView {
     public static final int SOUTH = 3;
 
 
-    private VEmail email;
+    private Email email;
 
     private Paint headerBox = new Paint();
 
@@ -57,6 +53,10 @@ public class Card extends CardView {
     public Card(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs, 0);
+    }
+
+    public Email getEmail(){
+        return email;
     }
 
     public Card(Context context, AttributeSet attrs, int defStyle) {
@@ -101,7 +101,7 @@ public class Card extends CardView {
         return getTop() + getWidth()/2;
     }
 
-    public void setEmail(VEmail email){
+    public void setEmail(Email email){
         this.email = email;
         try {
             setBody(email.getBody());

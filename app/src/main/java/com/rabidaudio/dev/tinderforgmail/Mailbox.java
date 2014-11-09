@@ -1,13 +1,10 @@
 package com.rabidaudio.dev.tinderforgmail;
 
-import android.app.IntentService;
-import android.content.Intent;
 import android.util.Log;
 
-import com.rabidaudio.dev.tinderforgmail.views.MainActivity;
-import com.sun.mail.gimap.GmailFolder;
-import com.sun.mail.gimap.GmailMessage;
-import com.sun.mail.gimap.GmailSSLStore;
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPMessage;
+import com.sun.mail.imap.IMAPSSLStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +31,7 @@ public class Mailbox {
     private final String HOST = "imap.gmail.com";
     private String username;    //  = "rabidaudio@gmail.com";//todo arg object
     private String password;    //  = "JcYe0v94AQ3J";
-    private static final String PROVIDER = "gimaps";//"imaps";
+    private static final String PROVIDER = "imaps";//"gimaps";//"imaps";
     private static final int PORT = 993;
 
 
@@ -44,15 +41,15 @@ public class Mailbox {
 
     private String folderName;
     private Session session;
-    private GmailSSLStore store;
+    private IMAPSSLStore store;
 
-    private GmailFolder folder;
+    private IMAPFolder folder;
 
-    private GmailFolder inbox;
-    private GmailFolder trash;
-    private GmailFolder spam;
-    private GmailFolder starred;
-    private GmailFolder important;
+    private IMAPFolder inbox;
+    private IMAPFolder trash;
+    private IMAPFolder spam;
+    private IMAPFolder starred;
+    private IMAPFolder important;
 
     public Mailbox(String folderName){
         this.folderName = folderName;
@@ -73,11 +70,13 @@ public class Mailbox {
         // IMAP port.
     }
 
-    public void connect() throws MessagingException {
+    public void connect(String username,String password) throws MessagingException {
         if(username==null || password==null){
             Log.e(TAG, "U/P never provided!!!");
             return;
         }
+        this.username = username;
+        this.password = password;
         if(folderName == null){
             Log.d(TAG, "folder choice not set");
             folderName = GMAIL_ALLMAIL;
@@ -85,23 +84,23 @@ public class Mailbox {
         //Connect to the server
         session = Session.getInstance(props, null);
 //        session.setDebug(true); //TODO remove
-        store = (GmailSSLStore) session.getStore(PROVIDER);
+        store = (IMAPSSLStore) session.getStore(PROVIDER);
 
         store.connect(HOST, PORT, username, password);
 
         //open the inbox folder
-        folder = (GmailFolder) store.getFolder(folderName);
+        folder = (IMAPFolder) store.getFolder(folderName);
         folder.open(Folder.READ_WRITE);
         if(folderName.equals(GMAIL_INBOX)){
             inbox = folder;
         }else{
-            inbox = (GmailFolder) store.getFolder(GMAIL_INBOX);
+            inbox = (IMAPFolder) store.getFolder(GMAIL_INBOX);
             inbox.open(Folder.READ_WRITE);
         }
-        spam = (GmailFolder) store.getFolder(GMAIL_SPAM);
-        trash = (GmailFolder) store.getFolder(GMAIL_TRASH);
-        important = (GmailFolder) store.getFolder(GMAIL_IMPORTANT);
-        starred = (GmailFolder) store.getFolder(GMAIL_STARRED);
+        spam = (IMAPFolder) store.getFolder(GMAIL_SPAM);
+        trash = (IMAPFolder) store.getFolder(GMAIL_TRASH);
+        important = (IMAPFolder) store.getFolder(GMAIL_IMPORTANT);
+        starred = (IMAPFolder) store.getFolder(GMAIL_STARRED);
 
         spam.open(Folder.READ_WRITE);
         trash.open(Folder.READ_WRITE);
@@ -114,8 +113,9 @@ public class Mailbox {
     public void disconnect() throws MessagingException {
         //close the inbox folder but do not
         //remove the messages from the server
-        folder.close(false);
-        store.close();
+
+        if(folder != null) folder.close(false);
+        if(store != null) store.close();
     }
 
     public List<Email> getUnreadMail() throws MessagingException {
@@ -159,7 +159,7 @@ public class Mailbox {
         Log.d(TAG, "building list");
 
         for (Message message : messages) {
-            Email e = new Email((GmailMessage) message);
+            Email e = new Email((IMAPMessage) message);
 //            Log.d(TAG, e.debugInfo());
             emails.add(e);
         }

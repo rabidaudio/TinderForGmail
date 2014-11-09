@@ -1,13 +1,15 @@
 package com.rabidaudio.dev.tinderforgmail;
 
-import com.sun.mail.gimap.GmailFolder;
-import com.sun.mail.gimap.GmailMessage;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPMessage;
 import com.sun.mail.imap.protocol.IMAPProtocol;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 
+import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -20,7 +22,9 @@ import javax.mail.MessagingException;
  */
 public class Email implements Serializable {
 
-    private GmailMessage message;
+    private IMAPMessage message;
+
+    String body;
 
     public boolean isRead() {
         try {
@@ -31,8 +35,18 @@ public class Email implements Serializable {
         }
     }
 
-    public Email(GmailMessage message){
+    public Email(IMAPMessage message){
         this.message = message;
+        body = "";
+        try {
+//            message.getContent()
+            BufferedReader b =  new BufferedReader(new InputStreamReader(message.getInputStream()));
+            while(b.ready()){
+                body += b.readLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void markAsRead() throws MessagingException {
@@ -54,65 +68,70 @@ public class Email implements Serializable {
 //    public void archive() throws MessagingException {
 //    }
 
+    public Address getSenderEmail() throws MessagingException{
+        Address s = message.getSender();
+        return s;
+    }
+    public Address getSenderName() throws MessagingException{
+        Address s = message.getSender();
+        return s;
+    }
+
     public String getSubject() throws MessagingException {
         return message.getSubject();
     }
 
-//    public BufferedReader getBody() throws MessagingException {
-//        //TODO maybe convert HTML to raw text //message.getContentType();
-//        try {
-//            return new BufferedReader(new InputStreamReader(message.getDataHandler().getInputStream()));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-
-    public long getGMID() throws MessagingException{
-        return message.getMsgId(); //google's id
+    public String getBody() throws MessagingException {
+        //TODO maybe convert HTML to raw text //message.getContentType();
+        return body;
     }
+
+//    public long getGMID() throws MessagingException{
+//        return message.getMsgId(); //google's id
+//    }
     public String getID() throws MessagingException{
         return message.getMessageID();
     }
 
-    public String debugInfo() throws MessagingException{
-        String labels = "";
-        for(String l : getLabels()){
-            labels+="\t"+l+"\n";
-        }
-        try {
-            return "Message: " + message.getSubject() + "\n" + message.getSender() + "\n"
-                    + "star? "+isStarred()+"\n"
-                    + "read? "+isRead() + "\n"
-                    + "LABELS"+labels;
-        }catch (Exception e){
-            return "error:"+e.getMessage();
-        }
-    }
+//    public String debugInfo() throws MessagingException{
+//        String labels = "";
+//        for(String l : getLabels()){
+//            labels+="\t"+l+"\n";
+//        }
+//        try {
+//            return "Message: " + message.getSubject() + "\n" + message.getSender() + "\n"
+//                    + "star? "+isStarred()+"\n"
+//                    + "read? "+isRead() + "\n"
+//                    + "LABELS"+labels;
+//        }catch (Exception e){
+//            return "error:"+e.getMessage();
+//        }
+//    }
 
-    public String[] getLabels() throws MessagingException{
-        return message.getLabels();
-    }
+//    public String[] getLabels() throws MessagingException{
+//        return message.getLabels();
+//    }
 
-    public boolean hasLabel(String label) throws MessagingException{
-        for(String l : getLabels()){
-            if(label.equals(label)){
-                return true;
-            }
-        }
-        return false;
-    }
-    public boolean isStarred() throws MessagingException{
-        return hasLabel("[Gmail]/Starred");
-    }
+//    public boolean hasLabel(String label) throws MessagingException{
+//        for(String l : getLabels()){
+//            if(label.equals(label)){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+
+//    public boolean isStarred() throws MessagingException{
+//        return hasLabel("[Gmail]/Starred");
+//    }
 
 
-    public void moveMessage(GmailFolder src, GmailFolder dest) throws MessagingException {
+    public void moveMessage(IMAPFolder src, IMAPFolder dest) throws MessagingException {
         copyMessage(dest);
         removeMessage(src);
     }
 
-    public void removeMessage(GmailFolder src) throws MessagingException {
+    public void removeMessage(IMAPFolder src) throws MessagingException {
         src.setFlags(_messageArray(), new Flags(Flags.Flag.DELETED), true);
         src.expunge();
     }
