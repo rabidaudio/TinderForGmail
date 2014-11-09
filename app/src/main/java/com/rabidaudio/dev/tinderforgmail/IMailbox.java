@@ -1,18 +1,6 @@
 package com.rabidaudio.dev.tinderforgmail;
 
-import android.util.Log;
-
-import com.sun.mail.gimap.GmailFolder;
-import com.sun.mail.gimap.GmailMessage;
-import com.sun.mail.gimap.GmailSSLStore;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.mail.Folder;
-import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Session;
 
 /**
  * Created by charles on 11/8/14.

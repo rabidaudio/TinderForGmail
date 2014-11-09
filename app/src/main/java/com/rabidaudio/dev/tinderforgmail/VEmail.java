@@ -2,14 +2,10 @@ package com.rabidaudio.dev.tinderforgmail;
 
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
-import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.protocol.IMAPProtocol;
 
 import java.io.Serializable;
 
-import javax.mail.Flags;
-import javax.mail.Message;
 import javax.mail.MessagingException;
 
 /**

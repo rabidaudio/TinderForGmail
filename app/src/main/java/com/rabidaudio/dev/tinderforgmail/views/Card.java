@@ -19,9 +19,6 @@ import android.widget.TextView;
 import com.rabidaudio.dev.tinderforgmail.R;
 import com.rabidaudio.dev.tinderforgmail.VEmail;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 import javax.mail.MessagingException;
 
 
@@ -66,8 +63,7 @@ public class Card extends CardView {
     }
 
     private void init(final Context context, AttributeSet attrs, int defStyle) {
-        int[] colors = {R.color.pink, R.color.blue, R.color.green};
-        headerBox.setColor(getResources().getColor(colors[(int)(Math.random() % 3)]));
+        headerBox.setColor(randomColor());
 
         //build layout (so internal views work)
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -88,7 +84,8 @@ public class Card extends CardView {
 //                Log.v(TAG, "DRAG-EVENT: " + event.getAction());
                 switch (event.getAction()) {
                     case DragEvent.ACTION_DRAG_STARTED:
-                        v.setVisibility(View.INVISIBLE);
+//                        v.setVisibility(View.INVISIBLE);
+                        v.hideText();
                         break;
                     case DragEvent.ACTION_DRAG_ENTERED:
                         //set inital positions
@@ -102,7 +99,7 @@ public class Card extends CardView {
                         int dx = Math.round(event.getX()) - v.getCenterX();
 //                        int dy = Math.round(event.getY()) - v.getCenterY();
                         int dy = Math.round(event.getY()) - v.start_y;
-                        Log.w(TAG, event.getY()+"::"+v.getCenterY()+"////"+v.getTop()+","+v.getBottom()+","+v.getHeight());
+
                         if(distanceFormula(dx, dy) > DISTANCE_THRESH*v.getWidth()){
                             //pulled far enough
                             switch (findDirection(dx, dy)){
@@ -142,14 +139,14 @@ public class Card extends CardView {
                 ViewGroup owner = (ViewGroup) newView.getParent();
                 owner.removeView(newView);
                 ((RelativeLayout) ((Activity)context).findViewById(R.id.main_container)).addView(newView);
-                newView.setVisibility(View.VISIBLE);
+//                newView.setVisibility(View.VISIBLE);
+                ((Card) newView).showText();
             }
             private double distanceFormula(int a, int b){
                 return Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
             }
             //return the proper cardinal direction based on drag offsets 0:1:2:3<=>W:N:E:S
             private int findDirection(int dx, int dy){
-                Log.d(TAG, dx+"::"+dy);
                 if(Math.abs(dy) - Math.abs(dx) >= 0){
                     return (dy > 0 ? SOUTH : NORTH);
                 }else{
@@ -192,24 +189,56 @@ public class Card extends CardView {
         }
     }
 
+    public void hideText(){
+        setBody("");
+        setSender("");
+        setSubject("");
+        invalidate();
+    }
+    public void showText(){
+        setEmail(email);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        //make it square but to fit
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
-        int size = 0;
-        int width = getMeasuredWidth();
-        int height = getMeasuredHeight();
-        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+        int desired = Math.min(widthSize, heightSize);
 
-        // set the dimensions
-        if (widthWithoutPadding > heigthWithoutPadding) {
-            size = heigthWithoutPadding;
+        int width;
+        int height;
+
+        //Measure Width
+        if (widthMode == MeasureSpec.EXACTLY) {
+            width = widthSize;
+        } else if (widthMode == MeasureSpec.AT_MOST) {
+            width = Math.min(desired, widthSize);
         } else {
-            size = widthWithoutPadding;
+            width = desired;
         }
 
-        setMeasuredDimension(size + getPaddingLeft() + getPaddingRight(), size + getPaddingTop() + getPaddingBottom());
+        //Measure Height
+        if (heightMode == MeasureSpec.EXACTLY) {
+            height = heightSize;
+        } else if (heightMode == MeasureSpec.AT_MOST) {
+            height = Math.min(desired, heightSize);
+        } else {
+            height = desired;
+        }
+        int side = Math.min(width,height);
+        setMeasuredDimension(side, side);
+    }
+
+
+    private int randomColor(){
+//        int[] colors = {R.color.pink, R.color.blue, R.color.green};
+//        return getResources().getColor(colors[(int)(Math.random() % 3)]);
+        return getResources().getColor(R.color.blue);
     }
 
     private void setBody(String content){

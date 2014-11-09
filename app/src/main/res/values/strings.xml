@@ -6,5 +6,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="signin_button">Sign In</string>
+    <string name="more_cards">More Cards</string>
 
 </resources>
