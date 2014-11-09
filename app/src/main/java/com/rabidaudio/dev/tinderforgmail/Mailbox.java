@@ -21,48 +21,8 @@ import javax.mail.Session;
 /**
  *
  */
-public class Mailbox extends IntentService {
+public class Mailbox {
     public static final String TAG = Mailbox.class.getCanonicalName();
-
-    public Mailbox() {
-        super("MailboxService");
-        Log.d(TAG, "Mailbox service constructed");
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        String action = intent.getAction();
-        if(username==null || password==null){
-            username = intent.getStringExtra(MainActivity.PREFS_EMAIL);
-            password = intent.getStringExtra(MainActivity.PREFS_PASS);
-            if(intent.hasExtra(MainActivity.PREFS_FOLDER)){
-                folderName = intent.getStringExtra(MainActivity.PREFS_FOLDER);
-            }
-        }
-        if(action.equals("CONNECT")) {
-            try {
-                connect();
-                Log.d(TAG, "telling activity");
-                Intent i = new Intent(this, MainActivity.class);
-                i.setAction("CONNECTED");
-                sendBroadcast(i);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }
-        }else if(action.equals("GET_MAIL")){
-            try{
-                List<Email> emails = getUnreadMail(10);
-                for(Email e : emails){
-                    Log.d(TAG, e.getSubject());
-                }
-            }catch (MessagingException e){
-                e.printStackTrace();
-            }
-        }else{
-            Log.d(TAG, "Unknown action "+action);
-        }
-    }
-
 
     public static final String GMAIL_INBOX = "INBOX";
     public static final String GMAIL_SPAM = "[Gmail]/Spam";
@@ -77,11 +37,6 @@ public class Mailbox extends IntentService {
     private static final String PROVIDER = "gimaps";//"imaps";
     private static final int PORT = 993;
 
-
-//    public static interface MailboxCallback {
-//        public void onConnected(Mailbox m);
-//        public void onDisconnected();
-//    }
 
     // create the properties for the Session
     private Properties props = new Properties();
@@ -99,29 +54,28 @@ public class Mailbox extends IntentService {
     private GmailFolder starred;
     private GmailFolder important;
 
-//    public Mailbox(){//, MailboxCallback callback){
-////        this.folderName = folderName;
-////        this.callback = callback;
-//
-//        // configure the jvm to use the jsse security.
-////        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-////        props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-//        // don't fallback to normal IMAP connections on failure.
-////        props.setProperty("mail.imap.socketFactory.fallback", String.valueOf(false));
-//        // use the simap port for imap/ssl connections.
-////        props.setProperty("mail.imap.socketFactory.port", String.valueOf(PORT));
-//        // set this session up to use SSL for IMAP connections
-//        // note that you can also use the defult imap port (including the
-//        // port specified by mail.imap.port) for your SSL port configuration.
-//        // however, specifying mail.imap.socketFactory.port means that,
-//        // if you decide to use fallback, you can try your SSL connection
-//        // on the SSL port, and if it fails, you can fallback to the normal
-//        // IMAP port.
-//    }
+    public Mailbox(String folderName){
+        this.folderName = folderName;
+
+        // configure the jvm to use the jsse security.
+//        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+//        props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        // don't fallback to normal IMAP connections on failure.
+//        props.setProperty("mail.imap.socketFactory.fallback", String.valueOf(false));
+        // use the simap port for imap/ssl connections.
+//        props.setProperty("mail.imap.socketFactory.port", String.valueOf(PORT));
+        // set this session up to use SSL for IMAP connections
+        // note that you can also use the defult imap port (including the
+        // port specified by mail.imap.port) for your SSL port configuration.
+        // however, specifying mail.imap.socketFactory.port means that,
+        // if you decide to use fallback, you can try your SSL connection
+        // on the SSL port, and if it fails, you can fallback to the normal
+        // IMAP port.
+    }
 
     public void connect() throws MessagingException {
         if(username==null || password==null){
-            Utils.Toaster(this, "U/P never provided!!!");
+            Log.e(TAG, "U/P never provided!!!");
             return;
         }
         if(folderName == null){

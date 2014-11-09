@@ -27,10 +27,10 @@ public class Card extends CardView {
 
     public static final double DISTANCE_THRESH = 0.25;
 
-    private static final int WEST  = 0;
-    private static final int NORTH = 1;
-    private static final int EAST  = 2;
-    private static final int SOUTH = 3;
+    public static final int WEST  = 0;
+    public static final int NORTH = 1;
+    public static final int EAST  = 2;
+    public static final int SOUTH = 3;
 
 
     private VEmail email;
@@ -46,6 +46,8 @@ public class Card extends CardView {
 
 //    int start_x;
     int start_y = -1;
+    int drag_x = -1;
+    int drag_y = -1;
 
     public Card(Context context) {
         super(context);
@@ -76,84 +78,6 @@ public class Card extends CardView {
         //set header container size
         findViewById(R.id.header_container).setMinimumHeight(Math.round(HEADER_SIZE*getMeasuredHeight()));
 
-        //create drag listeners+handlers for the card
-        setOnDragListener(new View.OnDragListener() {
-            @Override
-            public boolean onDrag(View view, DragEvent event) {
-                Card v = (Card) view;
-//                Log.v(TAG, "DRAG-EVENT: " + event.getAction());
-                switch (event.getAction()) {
-                    case DragEvent.ACTION_DRAG_STARTED:
-//                        v.setVisibility(View.INVISIBLE);
-                        v.hideText();
-                        break;
-                    case DragEvent.ACTION_DRAG_ENTERED:
-                        //set inital positions
-                        break;
-                    case DragEvent.ACTION_DRAG_LOCATION:
-                        if(v.start_y == -1){
-                            v.start_y = Math.round(event.getY());
-                            break;
-                        }
-
-                        int dx = Math.round(event.getX()) - v.getCenterX();
-//                        int dy = Math.round(event.getY()) - v.getCenterY();
-                        int dy = Math.round(event.getY()) - v.start_y;
-
-                        if(distanceFormula(dx, dy) > DISTANCE_THRESH*v.getWidth()){
-                            //pulled far enough
-                            switch (findDirection(dx, dy)){
-                                case WEST:
-                                    Log.w(TAG, "MARK READ");
-                                    break;
-                                case NORTH:
-                                    Log.w(TAG, "DELETE");
-                                    break;
-                                case EAST:
-                                    Log.w(TAG, "SKIP");
-                                    break;
-                                case SOUTH:
-                                    Log.w(TAG, "ARCHIVE");
-                                    break;
-                            }
-                        }
-                        break;
-                    case DragEvent.ACTION_DRAG_EXITED:
-                        //threshold reached
-                    case DragEvent.ACTION_DROP:
-                        // threshold not reached.put back in place + reassign View to ViewGroup
-                        v.start_y = -1;
-                        resetView(event);
-                        break;
-                    case DragEvent.ACTION_DRAG_ENDED:
-                        break;
-                    default:
-                        break;
-                }
-                return true;
-
-            }
-
-            public void resetView(DragEvent event){
-                View newView = (View) event.getLocalState();
-                ViewGroup owner = (ViewGroup) newView.getParent();
-                owner.removeView(newView);
-                ((RelativeLayout) ((Activity)context).findViewById(R.id.main_container)).addView(newView);
-//                newView.setVisibility(View.VISIBLE);
-                ((Card) newView).showText();
-            }
-            private double distanceFormula(int a, int b){
-                return Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
-            }
-            //return the proper cardinal direction based on drag offsets 0:1:2:3<=>W:N:E:S
-            private int findDirection(int dx, int dy){
-                if(Math.abs(dy) - Math.abs(dx) >= 0){
-                    return (dy > 0 ? SOUTH : NORTH);
-                }else{
-                    return (dx > 0 ? EAST : WEST);
-                }
-            }
-        });
         setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {

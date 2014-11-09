@@ -3,15 +3,27 @@ package com.rabidaudio.dev.tinderforgmail.views;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.rabidaudio.dev.tinderforgmail.Email;
 import com.rabidaudio.dev.tinderforgmail.Mailbox;
 import com.rabidaudio.dev.tinderforgmail.R;
 import com.rabidaudio.dev.tinderforgmail.Utils;
 import com.rabidaudio.dev.tinderforgmail.VEmail;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.mail.MessagingException;
 
 
 public class MainActivity extends Activity {
@@ -22,6 +34,11 @@ public class MainActivity extends Activity {
     public static final String PREFS_FOLDER = MainActivity.class.getPackage().getName()+".PREFS_FOLDER";
 
     private Mailbox mService = null;
+
+    int index = 0;
+    List<VEmail> emails;
+    Card card;
+    TextView count;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,89 +53,167 @@ public class MainActivity extends Activity {
             startActivityForResult(new Intent(this, SigninActivity.class), 1);
         }
 
-        Card c = (Card) findViewById(R.id.c);
-        c.setEmail(new VEmail(null));
-//        c.setOnDragListener(new View.OnDragListener() {
-//            @Override
-//            public boolean onDrag(View view, DragEvent event) {
-////                int center_x = (v.getLeft() + v.getRight()) / 2;
-////                int center_y = (v.getTop() + v.getBottom()) / 2;
-////                float touch_x = event.getX();
-////                float touch_y = event.getY();
-////                Log.v(TAG, "DRAG: "+center_x+","+center_y+";"+touch_x+","+touch_y);
-//
-//                Card2 v = (Card2) view;
-//
-//                Log.v(TAG, "DRAG-EVENT: "+event.getAction());
-//                switch (event.getAction()) {
-//                    case DragEvent.ACTION_DRAG_STARTED:
+        card = (Card) findViewById(R.id.c);
+        count = (TextView) findViewById(R.id.count);
+        //create drag listeners+handlers for the card
+        card.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View view, DragEvent event) {
+                Card v = (Card) view;
+//                Log.v(TAG, "DRAG-EVENT: " + event.getAction());
+                switch (event.getAction()) {
+                    case DragEvent.ACTION_DRAG_STARTED:
 //                        v.setVisibility(View.INVISIBLE);
-//                        break;
-//                    case DragEvent.ACTION_DRAG_ENTERED:
-////                        v.drag_x = event.getX();
-////                        v.drag_y = event.getY();
-////                        v.drag_time = System.currentTimeMillis();
-//                        break;
-//                    case DragEvent.ACTION_DRAG_LOCATION:
-////                        float dx = (event.getX() - v.drag_x)/v.drag_time;
-////                        float dy = (event.getY() - v.drag_y)/v.drag_time;
-////                        Log.d(TAG, "dx: "+dx+"  dy: "+dy);
-////                        v.drag_x = event.getX();
-////                        v.drag_y = event.getY();
-////                        v.drag_time = System.currentTimeMillis();
-//                        break;
-//                    case DragEvent.ACTION_DRAG_EXITED:
-//                        break;
-//                    case DragEvent.ACTION_DROP:
-//                        // Dropped, reassign View to ViewGroup
-//                        View newView = (View) event.getLocalState();
-//                        ViewGroup owner = (ViewGroup) newView.getParent();
-//                        owner.removeView(newView);
-//                        ((RelativeLayout) findViewById(R.id.main_container)).addView(newView);
-//                        newView.setVisibility(View.VISIBLE);
-//                        break;
-//                    case DragEvent.ACTION_DRAG_ENDED:
-//                        break;
-//                    default:
-//                        break;
-//                }
-//                return true;
-//            }
-//        });
-//        c.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    ClipData data = ClipData.newPlainText("label", "text"); //todo email content
-//                    View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(v);
-//                    v.startDrag(data, shadowBuilder, v, 0);
-////                    v.setVisibility(View.INVISIBLE);
-//                    return true;
-////                }else if(event.getAction() == MotionEvent.ACTION_UP){
-//////                    v.setVisibility(View.VISIBLE);
-////
-////                    return true;
-//                }
-//                return false;
-//            }
-//        });
+                        v.hideText();
+                        break;
+                    case DragEvent.ACTION_DRAG_ENTERED:
+                        //set inital positions
+                        break;
+                    case DragEvent.ACTION_DRAG_LOCATION:
+                        if(v.start_y == -1){
+                            v.start_y = Math.round(event.getY());
+                            break;
+                        }
+                        v.drag_x = Math.round(event.getX()) - v.getCenterX();
+//                        int dy = Math.round(event.getY()) - v.getCenterY();
+                        v.drag_y = Math.round(event.getY()) - v.start_y;
+                        break;
+                    case DragEvent.ACTION_DRAG_EXITED:
+                        //threshold reached
+                        break;
+                    case DragEvent.ACTION_DROP:
+                        // threshold not reached.put back in place + reassign View to ViewGroup
+                        v.start_y = -1;
+                        resetView(event);
+                        break;
+                    case DragEvent.ACTION_DRAG_ENDED:
+                        Log.d(TAG, v.drag_x + ":"+v.drag_y);
+
+//                        if(distanceFormula(dx, dy) > Card.DISTANCE_THRESH*v.getWidth()){
+                            //pulled far enough
+                            switch (findDirection(v.drag_x, v.drag_y)){
+                                case Card.WEST:
+                                    Log.w(TAG, "MARK READ");
+                                    Utils.Toaster(MainActivity.this, "Marked as read");
+                                    break;
+                                case Card.NORTH:
+                                    Log.w(TAG, "DELETE");
+                                    Utils.Toaster(MainActivity.this, "Deleted");
+                                    break;
+                                case Card.EAST:
+                                    Utils.Toaster(MainActivity.this, "Sent to the back");
+                                    Log.w(TAG, "SKIP");
+                                    break;
+                                case Card.SOUTH:
+                                    Log.w(TAG, "ARCHIVE");
+                                    Utils.Toaster(MainActivity.this, "Archived");
+                                    break;
+                            }
+                            setNextEmail(); //prepare the lower one
+
+//                        }
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+
+            }
+
+            public void resetView(DragEvent event){
+                View newView = (View) event.getLocalState();
+                ViewGroup owner = (ViewGroup) newView.getParent();
+                owner.removeView(newView);
+                ((RelativeLayout) findViewById(R.id.main_container)).addView(newView);
+//                newView.setVisibility(View.VISIBLE);
+                ((Card) newView).showText();
+            }
+            private double distanceFormula(int a, int b){
+                return Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
+            }
+            //return the proper cardinal direction based on drag offsets 0:1:2:3<=>W:N:E:S
+            private int findDirection(int dx, int dy){
+                if(Math.abs(dy) - Math.abs(dx) >= 0){
+                    return (dy > 0 ? Card.SOUTH : Card.NORTH);
+                }else{
+                    return (dx > 0 ? Card.EAST : Card.WEST);
+                }
+            }
+        });
+
+        //testing code
+        ArrayList<VEmail> mails = new ArrayList<VEmail>();
+        mails.add(new VEmail("New message from Sneh Parmar\n", "Sneh Parmar\t\n" +
+                "Sneh Parmar\t9:52pm Nov 8\n" +
+                "Hey are you back?\n" +
+                "\n" +
+                "View Conversation on Facebook\n" +
+                "This message was sent to charles@rabidaudio.com. If you don't want to receive these emails from Facebook in the future, please unsubscribe.\n" +
+                "Facebook, Inc., Attention: Department 415, PO Box 10005, Palo Alto, CA 94303", "notification+oivoih6f@facebookmail.com", "Facebook"));
+        mails.add(new VEmail("Marketplace Black November ® Sale: Wallet $9.99 | Barstool $39.95 | Seiko Watch $59.00", "View this email in your browser. Ensure delivery by adding promo@email.newegg.com to your Address Book.\n" +
+                "\t\n" +
+                "\t\t\t\t\t\t\n" +
+                "BLACKOUT SPECIALS. UP TO 85 PERCENT OFF. SHOP NOW.\n" +
+                "All Deals Expire 11:59PM PT, 11/15/2014\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "Save up to 50%\t \tSave up to 70%\n" +
+                "\n" +
+                "DXRACER Gaming Chairs Sale\n" +
+                "\n" +
+                " \tExplore Even More In Home & Outdoors\t \n" +
+                " \t \t \n" +
+                " \t\n" +
+                "Home Improvement\tHome Living\tOutdoor Entertainment\tAppliances\n" +
+                "Hand & Power Tools\tKitchen\tGarden Center\tFloor Care\n" +
+                "Hardware\tFurniture\tBBQ Grills\tSmall Appliances\n" +
+                "Light Bulbs\tBath\tOutdoor Audio\tHeating & Cooling\n" +
+                "Surveillance\tLighting & Fans\tOutdoor Power\tCooking\n" +
+                " \t \t \t \n" +
+                " \n" +
+                " \t \t \n" +
+                " \t\n" +
+                "Contact Customer Service\tSend Feedback to:\tWrite To Us:\n" +
+                "Newegg.com, 9997 Rose Hills Road, Whittier, CA. 90601\n" +
+                " \tnewsletter@newegg.com\n" +
+                " \n" +
+                " \t \t \n" +
+                " \t\n" +
+                "All offers expire 11:59 PM PT, 11/15/2014. Standard terms and conditions resume upon expiration. Valid only on current stock. Promo codes may not be combined with other promo codes on a single item and can only be used once per registered account. However, unless otherwise noted on the product page , customers may purchase up to five (5) pieces of the same product at the promo code price as long as all pieces are purchased in the same order.Only one promo code will be applied per item per order, even if the item is eligible for other promo codes entered at time of purchase. Newegg.com is not responsible for any typographical errors in this newsletter. \n" +
+                "\n" +
+                "Like our deals but don’t want to receive as many e-mails? Manage your e-mail subscriptions here. Or, you may unsubscribe.\n" +
+                "\n" +
+                " \n" +
+                " \tNewegg.com | Policy and Agreement | Privacy Policy | © 2000-2014 Newegg Inc. All rights reserved.\t", "Promo@email.newegg.com", "Newegg.com"));
+        mails.add(new VEmail("Jackets Win! Kick-off vs. Clemson set for Noon", "If you are unable to view this message correctly, click here.\n" +
+                "\n" +
+                "\n" +
+                "Georgia Tech Yellow Jackets\n" +
+                "\n" +
+                "\n" +
+                "#BuzzRewind: No. 24 Football Stomps State, 56-23\n" +
+                "\n" +
+                "Next home game:\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "GEORGIA TECH vs. CLEMSON\n" +
+                "Noon ET // Saturday, November 15 \n" +
+                "\n" +
+                "Get your Tickets Starting at $75 - Limited Lower Level Seats Available\n" +
+                "\n" +
+                "Copyright 2014, Georgia Tech. The team names, logos and uniform designs are registered trademarks of the teams indicated. No logos, photographs or graphics on this site may be reproduced without written permission. All rights reserved.\n" +
+                "You are receiving this message because you have been in contact with \n" +
+                "Georgia Tech or an affiliate.\n" +
+                "\n" +
+                "To manage your email preferences or unsubscribe, please click here.", "updates@gtathletics.fan-one.com", "Georgia Tech Football"));
+//        mails.add(new VEmail("Hello World", "here is a body", "cjk@gatech.edu", "Charles Julian Knight"));
 
 
-//        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
-//             @Override
-//             public void onReceive(Context context, Intent intent) {
-//                 String action = intent.getAction();
-//                 if(action.equals("CONNECTED")){
-//                     Log.d(TAG, "received connected msg");
-//                     Intent i = new Intent(MainActivity.this, Mailbox.class);
-//                     i.setAction("GET_MAIL");
-//                     startService(i);
-//                 }
-//             }
-//         }, new IntentFilter());
-
-//        new GetMail().execute((Integer) null);
-
+        handleEmailList(mails);
     }
 
     @Override
@@ -143,13 +238,8 @@ public class MainActivity extends Activity {
         final String u = settings.getString(PREFS_EMAIL, null);
         final String p = settings.getString(PREFS_PASS, null);
         Utils.Toaster(this, u + "+" + p);
-        //launch MailService
-        Intent i = new Intent(this, Mailbox.class);
-        i.putExtra(PREFS_EMAIL, u);
-        i.putExtra(PREFS_PASS, p);
-        i.putExtra(PREFS_FOLDER, Mailbox.GMAIL_ALLMAIL);
-        i.setAction("CONNECT");
-//        startService(i);
+
+        //launch getEmails
 
     }
 
@@ -173,24 +263,27 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-//    private void startMain(){
-//        //now connections are ready and we can start drawing
-//        //TODO make cards, etc
-//        try {
-//            List<Email> results = mService.getUnreadMail(10);
-//            for (Email e : results) {
-//                if (e.isRead()) {
-//                    Log.d(TAG, e.getSubject());
-//                    e.markAsUnread();
-//                }
-//            }
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            Log.e(TAG, "open issue", e);
-//        }
-//    }
+    public void handleEmailList(List<VEmail> emails){
+        this.emails = emails;
+        index = 0;
+        card.setEmail(emails.get(index));
+        count.setText(String.valueOf(emails.size() - index));
+    }
 
-//    class GetMail extends AsyncTask<Integer, Void, Void>{
+    public void setNextEmail(){
+        index++;
+        if(emails.size()-1 < index){
+            //todo display no more!
+            card.setVisibility(View.INVISIBLE);
+            count.setText("No more emails here :)");
+            findViewById(R.id.chain).setVisibility(View.INVISIBLE);
+        }else{
+            card.setEmail(emails.get(index));
+            count.setText(String.valueOf(emails.size() - index));
+        }
+    }
+
+//    class GetMail extends AsyncTask<Integer, Void, Void> {
 //        @Override
 //        protected Void doInBackground(Integer... params){
 //
