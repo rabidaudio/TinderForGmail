@@ -1,6 +1,7 @@
 package com.rabidaudio.dev.tinderforgmail.views;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -36,6 +38,8 @@ public class MainActivity extends Activity {
 
     String username;
     String password;
+
+    AlertDialog alert;
 
     int index = 0;
     List<Email> emails;
@@ -217,7 +221,14 @@ public class MainActivity extends Activity {
 //                "To manage your email preferences or unsubscribe, please click here.", "updates@gtathletics.fan-one.com", "Georgia Tech Football"));
 ////        mails.add(new VEmail("Hello World", "here is a body", "cjk@gatech.edu", "Charles Julian Knight"));
 
+        alert = new AlertDialog.Builder(this).create();
+        TextView v = new TextView(this);
+//        v.setImageDrawable(getResources().getDrawable(R.drawable.load));
+        v.setText("Grabbing your email, just a sec...");
+        alert.setView(v);
+        alert.show();
         new GetMail().execute();
+
 
 //        handleEmailList(mails);
     }
@@ -339,6 +350,7 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<Email> results){
+            alert.hide();
             handleEmailList(results);
         }
     }
