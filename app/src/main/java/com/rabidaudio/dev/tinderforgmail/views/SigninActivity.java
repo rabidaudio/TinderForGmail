@@ -1,4 +1,4 @@
-package com.rabidaudio.dev.tinderforgmail;
+package com.rabidaudio.dev.tinderforgmail.views;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.rabidaudio.dev.tinderforgmail.R;
 
 /**
  * Created by charles on 11/8/14.

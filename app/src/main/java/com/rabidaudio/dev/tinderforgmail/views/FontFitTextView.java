@@ -1,4 +1,4 @@
-package com.rabidaudio.dev.tinderforgmail;
+package com.rabidaudio.dev.tinderforgmail.views;
 
 /**
  * http://stackoverflow.com/a/7875656

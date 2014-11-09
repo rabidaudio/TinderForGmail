@@ -1,38 +1,38 @@
-package com.rabidaudio.dev.tinderforgmail;
+package com.rabidaudio.dev.tinderforgmail.views;
 
-import android.animation.Animator;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.rabidaudio.dev.tinderforgmail.R;
+import com.rabidaudio.dev.tinderforgmail.VEmail;
 
 import javax.mail.MessagingException;
 
 
-public class Card extends LinearLayout {
+public class Card extends CardView {
     private static final String TAG = Card.class.getSimpleName();
 
-    public static final double DISTANCE_THRESH = 0.3;
+    public static final double DISTANCE_THRESH = 0.25;
 
     private VEmail email;
 
     private Paint senderTextPaint = new Paint();
     private Paint headerBox = new Paint();
 
-    private Drawable shadow;
+//    private Drawable shadow;
 
     private TextView sender;
     private TextView subject;
@@ -44,7 +44,7 @@ public class Card extends LinearLayout {
 
 //    private Animator animator = ViewAnimationUtils.
 
-    private static final int SHADOW_RADIUS = 8*3;
+    private static final int SHADOW_RADIUS = 6*3;
 
     public Card(Context context) {
         super(context);
@@ -63,9 +63,9 @@ public class Card extends LinearLayout {
 
     private void init(final Context context, AttributeSet attrs, int defStyle) {
         senderTextPaint.setTextSize(50f);
-        shadow = getResources().getDrawable(R.drawable.shadow);
-        setBackgroundDrawable(shadow);
-        headerBox.setColor(getResources().getColor(R.color.lightblue));
+//        shadow = getResources().getDrawable(R.drawable.shadow);
+//        setBackgroundDrawable(shadow);
+        headerBox.setColor(getResources().getColor(R.color.pink));
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.card, this, true);
@@ -88,28 +88,43 @@ public class Card extends LinearLayout {
                 Card v = (Card) view;
 
                 Log.v(TAG, "DRAG-EVENT: " + event.getAction());
+
+//                Log.d(TAG, event.getX()+","+event.getY()+","+((v.getLeft() + v.getRight()) / 2)+","+((v.getTop() + v.getBottom()) / 2));
                 switch (event.getAction()) {
                     case DragEvent.ACTION_DRAG_STARTED:
                         v.setVisibility(View.INVISIBLE);
                         break;
                     case DragEvent.ACTION_DRAG_ENTERED:
                         //set inital positions
-                        v.drag_x = (v.getLeft()+v.getRight())/2;
-                        v.drag_y = (v.getLeft()+v.getRight())/2;
+//                        v.drag_x = (v.getLeft()+v.getRight())/2;
+//                        v.drag_y = (v.getLeft()+v.getRight())/2;
                         break;
                     case DragEvent.ACTION_DRAG_LOCATION:
-                        double d_x = (event.getX() - v.drag_x) / (double) v.getWidth();
-                        double d_y = (event.getY() - v.drag_y) / (double) v.getWidth();
-                        Log.d(TAG, "dx: " + d_x + "  dy: " + d_y);
-                        if (Math.abs(d_x) > DISTANCE_THRESH){// || Math.abs(d_y) > DISTANCE_THRESH) {
+//                        double d_x = (event.getX() - v.drag_x) / (double) v.getWidth();
+//                        double d_y = (event.getY() - v.drag_y) / (double) v.getWidth();
+//                        if (Math.abs(d_x) > DISTANCE_THRESH){// || Math.abs(d_y) > DISTANCE_THRESH) {
 //                            Utils.Toaster(context, "HIT");
-                            Log.w(TAG, "HIT");
-                        }
+//                            Log.w(TAG, "HIT");
+//                        }
+
+
                         break;
                     case DragEvent.ACTION_DRAG_EXITED:
-                        break;
+                        //threshold reached - handle
+
+
+                        int px = ((v.getLeft() + v.getRight()) / 2) - Math.round(event.getX());
+                        int py = ((v.getTop() + v.getBottom()) / 2) - Math.round(event.getY());
+
+                        float dx = (v.drag_x - event.getX()) / (System.currentTimeMillis() - v.drag_time);
+                        float dy = (v.drag_y - event.getY()) / (System.currentTimeMillis() - v.drag_time);
+
+                        Log.d(TAG, dx+"\t"+dy+"\t:\t"+px+"\t"+py);
+//                        return false;
+
+//                        break;
                     case DragEvent.ACTION_DROP:
-                        // Dropped back in place reassign View to ViewGroup
+                        // threshold not reached.put back in place + reassign View to ViewGroup
                         View newView = (View) event.getLocalState();
                         ViewGroup owner = (ViewGroup) newView.getParent();
                         owner.removeView(newView);

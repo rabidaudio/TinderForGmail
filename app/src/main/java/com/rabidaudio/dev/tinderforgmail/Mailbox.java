@@ -1,34 +1,22 @@
 package com.rabidaudio.dev.tinderforgmail;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.Intent;
-import android.media.MediaActionSound;
-import android.os.Binder;
-import android.os.IBinder;
 import android.util.Log;
 
+import com.rabidaudio.dev.tinderforgmail.views.MainActivity;
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
 import com.sun.mail.gimap.GmailSSLStore;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPMessage;
-import com.sun.mail.imap.IMAPSSLStore;
-import com.sun.mail.imap.IMAPStore;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.mail.FetchProfile;
-import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.search.FlagTerm;
-import javax.mail.search.SearchTerm;
 
 /**
  *

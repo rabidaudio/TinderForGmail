@@ -1,4 +1,4 @@
-package com.rabidaudio.dev.tinderforgmail;
+package com.rabidaudio.dev.tinderforgmail.views;
 
 import android.content.Context;
 import android.util.Log;
@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.rabidaudio.dev.tinderforgmail.Email;
+import com.rabidaudio.dev.tinderforgmail.R;
 
 import java.util.List;
 
