@@ -47,6 +47,9 @@ public class Card extends CardView {
     private static final int SHADOW_RADIUS = 4*3;
     private static final float HEADER_SIZE = 0.4f;
 
+//    int start_x;
+    int start_y = -1;
+
     public Card(Context context) {
         super(context);
         init(context,null, 0);
@@ -91,9 +94,14 @@ public class Card extends CardView {
                         //set inital positions
                         break;
                     case DragEvent.ACTION_DRAG_LOCATION:
+                        if(v.start_y == -1){
+                            v.start_y = Math.round(event.getY());
+                            break;
+                        }
 
                         int dx = Math.round(event.getX()) - v.getCenterX();
-                        int dy = Math.round(event.getY()) - v.getCenterY();
+//                        int dy = Math.round(event.getY()) - v.getCenterY();
+                        int dy = Math.round(event.getY()) - v.start_y;
                         Log.w(TAG, event.getY()+"::"+v.getCenterY()+"////"+v.getTop()+","+v.getBottom()+","+v.getHeight());
                         if(distanceFormula(dx, dy) > DISTANCE_THRESH*v.getWidth()){
                             //pulled far enough
@@ -105,7 +113,7 @@ public class Card extends CardView {
                                     Log.w(TAG, "DELETE");
                                     break;
                                 case EAST:
-                                    Log.w(TAG, "SAVE FOR LATER");
+                                    Log.w(TAG, "SKIP");
                                     break;
                                 case SOUTH:
                                     Log.w(TAG, "ARCHIVE");
@@ -117,6 +125,7 @@ public class Card extends CardView {
                         //threshold reached
                     case DragEvent.ACTION_DROP:
                         // threshold not reached.put back in place + reassign View to ViewGroup
+                        v.start_y = -1;
                         resetView(event);
                         break;
                     case DragEvent.ACTION_DRAG_ENDED:
@@ -167,8 +176,8 @@ public class Card extends CardView {
         return  (getLeft() + getRight()) / 2;
     }
     public int getCenterY(){
-        return (getTop() + getBottom()) / 2;
-//        return getBottom() - getHeight()/2;
+//        return (getTop() + getBottom()) / 2;
+        return getTop() + getWidth()/2;
     }
 
     public void setEmail(VEmail email){
@@ -186,14 +195,21 @@ public class Card extends CardView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        //make it square but to fit
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
-        int size = Math.min(widthSize, heightSize);
-        setMeasuredDimension(size, size);
+        int size = 0;
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
+        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+
+        // set the dimensions
+        if (widthWithoutPadding > heigthWithoutPadding) {
+            size = heigthWithoutPadding;
+        } else {
+            size = widthWithoutPadding;
+        }
+
+        setMeasuredDimension(size + getPaddingLeft() + getPaddingRight(), size + getPaddingTop() + getPaddingBottom());
     }
 
     private void setBody(String content){
