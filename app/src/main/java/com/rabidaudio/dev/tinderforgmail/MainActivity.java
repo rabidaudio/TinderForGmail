@@ -55,8 +55,8 @@ public class MainActivity extends Activity {
             startActivityForResult(new Intent(this, SigninActivity.class), 1);
         }
 
-        Card c = (Card) findViewById(R.id.c);
-        c.setEmail(new VEmail(null));
+        Card2 c = (Card2) findViewById(R.id.c);
+//        c.setEmail(new VEmail(null));
         c.setOnDragListener(new View.OnDragListener() {
             @Override
             public boolean onDrag(View view, DragEvent event) {
@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
 //                float touch_y = event.getY();
 //                Log.v(TAG, "DRAG: "+center_x+","+center_y+";"+touch_x+","+touch_y);
 
-                Card v = (Card) view;
+                Card2 v = (Card2) view;
 
                 Log.v(TAG, "DRAG-EVENT: "+event.getAction());
                 switch (event.getAction()) {
@@ -74,17 +74,17 @@ public class MainActivity extends Activity {
                         v.setVisibility(View.INVISIBLE);
                         break;
                     case DragEvent.ACTION_DRAG_ENTERED:
-                        v.drag_x = event.getX();
-                        v.drag_y = event.getY();
-                        v.drag_time = System.currentTimeMillis();
+//                        v.drag_x = event.getX();
+//                        v.drag_y = event.getY();
+//                        v.drag_time = System.currentTimeMillis();
                         break;
                     case DragEvent.ACTION_DRAG_LOCATION:
-                        float dx = (event.getX() - v.drag_x)/v.drag_time;
-                        float dy = (event.getY() - v.drag_y)/v.drag_time;
-                        Log.d(TAG, "dx: "+dx+"  dy: "+dy);
-                        v.drag_x = event.getX();
-                        v.drag_y = event.getY();
-                        v.drag_time = System.currentTimeMillis();
+//                        float dx = (event.getX() - v.drag_x)/v.drag_time;
+//                        float dy = (event.getY() - v.drag_y)/v.drag_time;
+//                        Log.d(TAG, "dx: "+dx+"  dy: "+dy);
+//                        v.drag_x = event.getX();
+//                        v.drag_y = event.getY();
+//                        v.drag_time = System.currentTimeMillis();
                         break;
                     case DragEvent.ACTION_DRAG_EXITED:
                         break;

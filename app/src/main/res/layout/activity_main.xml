@@ -10,11 +10,23 @@
     tools:context="com.rabidaudio.dev.tinderforgmail.MainActivity"
     android:gravity="center_vertical|center_horizontal">
 
-    <com.rabidaudio.dev.tinderforgmail.Card
-        android:id="@+id/c"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+    <!--<com.rabidaudio.dev.tinderforgmail.Card-->
+        <!--android:id="@+id/c"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content">-->
 
-        </com.rabidaudio.dev.tinderforgmail.Card>
+        <!--</com.rabidaudio.dev.tinderforgmail.Card>-->
+
+    <com.rabidaudio.dev.tinderforgmail.Card2
+        android:id="@+id/c"
+        android:layout_width="500dp"
+        android:layout_height="500dp">
+
+        <TextView
+            android:text="MEOW"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        </com.rabidaudio.dev.tinderforgmail.Card2>
 
 </RelativeLayout>

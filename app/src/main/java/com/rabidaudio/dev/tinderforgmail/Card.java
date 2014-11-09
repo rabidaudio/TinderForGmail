@@ -1,5 +1,8 @@
 package com.rabidaudio.dev.tinderforgmail;
 
+import android.animation.Animator;
+import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -8,7 +11,10 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -18,6 +24,8 @@ import javax.mail.MessagingException;
 
 public class Card extends LinearLayout {
     private static final String TAG = Card.class.getSimpleName();
+
+    public static final double DISTANCE_THRESH = 0.3;
 
     private VEmail email;
 
@@ -33,6 +41,8 @@ public class Card extends LinearLayout {
     public float drag_x = 0;
     public float drag_y = 0;
     public float drag_time = 0;
+
+//    private Animator animator = ViewAnimationUtils.
 
     private static final int SHADOW_RADIUS = 8*3;
 
@@ -51,7 +61,7 @@ public class Card extends LinearLayout {
         init(context, attrs, defStyle);
     }
 
-    private void init(Context context, AttributeSet attrs, int defStyle) {
+    private void init(final Context context, AttributeSet attrs, int defStyle) {
         senderTextPaint.setTextSize(50f);
         shadow = getResources().getDrawable(R.drawable.shadow);
         setBackgroundDrawable(shadow);
@@ -65,9 +75,72 @@ public class Card extends LinearLayout {
         body = (TextView) findViewById(R.id.body);
 
         findViewById(R.id.header_container).setMinimumHeight(Math.round(0.45f*getMeasuredHeight()));
-//        ((TextView) findViewById(R.id.body)).setMaxHeight(Math.round(0.6f*getMeasuredHeight()));
 
-//        setOnDragListener(this); //listen to drag events
+        setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View view, DragEvent event) {
+//                int center_x = (v.getLeft() + v.getRight()) / 2;
+//                int center_y = (v.getTop() + v.getBottom()) / 2;
+//                float touch_x = event.getX();
+//                float touch_y = event.getY();
+//                Log.v(TAG, "DRAG: "+center_x+","+center_y+";"+touch_x+","+touch_y);
+
+                Card v = (Card) view;
+
+                Log.v(TAG, "DRAG-EVENT: " + event.getAction());
+                switch (event.getAction()) {
+                    case DragEvent.ACTION_DRAG_STARTED:
+                        v.setVisibility(View.INVISIBLE);
+                        break;
+                    case DragEvent.ACTION_DRAG_ENTERED:
+                        //set inital positions
+                        v.drag_x = (v.getLeft()+v.getRight())/2;
+                        v.drag_y = (v.getLeft()+v.getRight())/2;
+                        break;
+                    case DragEvent.ACTION_DRAG_LOCATION:
+                        double d_x = (event.getX() - v.drag_x) / (double) v.getWidth();
+                        double d_y = (event.getY() - v.drag_y) / (double) v.getWidth();
+                        Log.d(TAG, "dx: " + d_x + "  dy: " + d_y);
+                        if (Math.abs(d_x) > DISTANCE_THRESH){// || Math.abs(d_y) > DISTANCE_THRESH) {
+//                            Utils.Toaster(context, "HIT");
+                            Log.w(TAG, "HIT");
+                        }
+                        break;
+                    case DragEvent.ACTION_DRAG_EXITED:
+                        break;
+                    case DragEvent.ACTION_DROP:
+                        // Dropped back in place reassign View to ViewGroup
+                        View newView = (View) event.getLocalState();
+                        ViewGroup owner = (ViewGroup) newView.getParent();
+                        owner.removeView(newView);
+                        ((RelativeLayout) ((Activity)context).findViewById(R.id.main_container)).addView(newView);
+                        newView.setVisibility(View.VISIBLE);
+                        break;
+                    case DragEvent.ACTION_DRAG_ENDED:
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+        setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    ClipData data = ClipData.newPlainText("label", "text"); //todo email content
+                    View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(v);
+                    v.startDrag(data, shadowBuilder, v, 0);
+//                    v.setVisibility(View.INVISIBLE);
+                    return true;
+//                }else if(event.getAction() == MotionEvent.ACTION_UP){
+////                    v.setVisibility(View.VISIBLE);
+//
+//                    return true;
+                }
+                return false;
+            }
+        });
 
     }
 
